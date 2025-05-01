@@ -1,9 +1,10 @@
 import React from 'react'
+import UserTable from './components/UserTable'
 
 const App = () => {
   return (
-    <div>
-      <h1 className = "text-3xl">hey</h1>    
+    <div className='w-full h-screen p-10 '>
+      <UserTable />   
     </div>
   )
 }
