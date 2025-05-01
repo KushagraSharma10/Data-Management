@@ -4,4 +4,10 @@ html,
 body,#root {
   height: 100%;
   width: 100%;
+  
+}
+
+body {
+  font-family: 'Plus Jakarta Sans';
+  background-color: #f3f4f6;
 }

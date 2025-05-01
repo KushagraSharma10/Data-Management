@@ -55,7 +55,6 @@ const rows = [
     "Full Stack Dev",
     "B.Sc"
   ),
-  // Add more rows if needed
 ];
 
 function descendingComparator(a, b, orderBy) {
@@ -144,7 +143,7 @@ function UserTableHead(props) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? "right" : "left"}
+            align={headCell.numeric ? "right" : "left"} 
             padding={headCell.disablePadding ? "none" : "normal"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -214,14 +213,18 @@ function UserTableToolbar(props) {
         </Typography>
       )}
       {numSelected > 0 ? (
-        <Tooltip title="Delete">
+        <Tooltip className="flex" title="Delete">
           <IconButton className="flex gap-3">
             <Button className="px-10" variant="contained" disableElevation>
               Edit
             </Button>
+          </IconButton>  
+          <IconButton className="flex gap-3">
             <Button className="px-10" variant="contained" disableElevation>
               View
             </Button>
+          </IconButton>
+          <IconButton className="flex gap-3">
             <Button
               style={{ backgroundColor: "red" }}
               variant="contained"
@@ -304,13 +307,14 @@ export default function UserTable() {
   );
 
   return (
-    <Box className="mt-30" sx={{ width: "100%" }}>
+    <Box className="mt-30 text-['Plus Jakarta Sans']" sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <UserTableToolbar numSelected={selected.length} />
         <TableContainer>
           <Table
-            sx={{ minWidth: 750 }}
+            sx={{ minWidth: 750,  fontFamily:"Plus Jakarta Sans" }}
             aria-labelledby="tableTitle"
+           
             size={"medium"}
           >
             <UserTableHead
@@ -346,7 +350,20 @@ export default function UserTable() {
                         }}
                       />
                     </TableCell>
-                    <TableCell align="left">{row.profile}</TableCell>
+                    <TableCell align="left">
+                      <div className="flex items-center gap-3">
+                        <img
+                          className="w-10 h-10 rounded-full"
+                          src={`https://i.pravatar.cc/150?u=${row.id}`}
+                          alt="Profile"
+                        />
+                        <div>
+                          <p className="text-lg">{row.profile}</p>
+                          
+                        </div>
+                        {/* {row.profile} */}
+                      </div>
+                    </TableCell>
                     <TableCell align="left">{row.phone}</TableCell>
                     <TableCell align="left">{row.gender}</TableCell>
                     <TableCell align="left">{row.dob}</TableCell>
