@@ -26,9 +26,12 @@ export default function RegisterForm() {
     try {
       const response = await axios.post("http://localhost:3000/create", formData);
       console.log(response.data);
+      setFormData("")
     } catch (error) {
       console.error("There was an error submitting the form:", error);
     }
+
+    window.location.href = "/";
   };
 
   return (
