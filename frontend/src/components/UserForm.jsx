@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState } from "react";
 
 export default function RegisterForm() {
@@ -21,17 +22,13 @@ export default function RegisterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const response = await fetch("http://localhost:3000/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData), // Send form data as JSON
-    });
-
-    const result = await response.json();
-    console.log(result);
+  
+    try {
+      const response = await axios.post("http://localhost:3000/create", formData);
+      console.log(response.data);
+    } catch (error) {
+      console.error("There was an error submitting the form:", error);
+    }
   };
 
   return (
@@ -164,7 +161,7 @@ export default function RegisterForm() {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full p-2 border border-gray-300 rounded"
+                className="w-full p-2 border border-gray-300 rounded outline-none active:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-400 transition duration-200 ease-in-out"
               />
             </div>
           </div>
