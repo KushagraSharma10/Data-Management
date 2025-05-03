@@ -22,56 +22,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import { Avatar, Button } from "@mui/material";
-
-function createData(id, profile, phone, gender, personalDetails, edu) {
-  return {
-    id,
-    profile,
-    phone,
-    gender,
-    personalDetails,
-    edu,
-  };
-}
-
-const rows = [
-  createData(
-    1,
-    {
-      avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-      name: "Rohit Sharma",
-      email: "rohit@example.com",
-    },
-    "9876543210",
-    "M",
-    "DOB: 1990-04-23\nAddress: Mumbai",
-    "B.Tech CSE"
-  ),
-  createData(
-    2,
-    {
-      avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-      name: "Priya Singh",
-      email: "priya@example.com",
-    },
-    "9876501234",
-    "F",
-    "DOB: 1994-11-12\nAddress: Delhi",
-    "MBA HR"
-  ),
-  createData(
-    3,
-    {
-      avatar: "https://randomuser.me/api/portraits/men/3.jpg",
-      name: "Amit Verma",
-      email: "amit@example.com",
-    },
-    "9988776655",
-    "M",
-    "DOB: 1992-06-01\nAddress: Jaipur",
-    "MCA"
-  ),
-];
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -241,6 +193,33 @@ export default function UserTable() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/");
+        setUsers(response.data.users); // assuming data is array of users
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const rows = users.map((user) => ({
+    id: user.id,
+    profile: {
+      avatar: user.image,
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+    },
+    phone: user.phone,
+    gender: user.gender.charAt(0).toUpperCase(),
+    personalDetails: `DOB: ${user.birthDate}, Age: ${user.age}\nAddress: ${user.address.address}, ${user.address.city}`,
+    edu: user.university,
+  }));
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -293,7 +272,7 @@ export default function UserTable() {
       [...rows]
         .sort(getComparator(order, orderBy))
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage]
+    [order, orderBy, page, rowsPerPage, rows]
   );
 
   return (
@@ -334,7 +313,9 @@ export default function UserTable() {
                       <Checkbox
                         color="primary"
                         checked={isItemSelected}
-                        inputProps={{ "aria-labelledby": labelId }}
+                        inputProps={{
+                          "aria-labelledby": labelId,
+                        }}
                       />
                     </TableCell>
                     <TableCell
@@ -343,29 +324,36 @@ export default function UserTable() {
                       scope="row"
                       padding="none"
                     >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Avatar
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                      >
+                        <img
                           src={row.profile.avatar}
-                          sx={{ width: 40, height: 40, mr: 2 }}
+                          alt={row.profile.name}
+                          style={{ width: 40, height: 40, borderRadius: "50%" }}
                         />
                         <Box>
-                          <Typography variant="subtitle2">
+                          <Typography variant="body1">
                             {row.profile.name}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="textSecondary">
                             {row.profile.email}
                           </Typography>
                         </Box>
                       </Box>
                     </TableCell>
-                    <TableCell>{row.phone}</TableCell>
-                    <TableCell>{row.gender}</TableCell>
-                    <TableCell>
-                      {row.personalDetails.split("\n").map((line, i) => (
-                        <div key={i}>{line}</div>
-                      ))}
+                    <TableCell align="left">{row.phone}</TableCell>
+                    <TableCell align="left">{row.gender}</TableCell>
+                    <TableCell align="left">
+                      <Box>
+                        {row.personalDetails.split("\n").map((line, i) => (
+                          <Typography key={i} variant="body2">
+                            {line}
+                          </Typography>
+                        ))}
+                      </Box>
                     </TableCell>
-                    <TableCell>{row.edu}</TableCell>
+                    <TableCell align="left">{row.edu}</TableCell>
                   </TableRow>
                 );
               })}
