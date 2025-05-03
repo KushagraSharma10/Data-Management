@@ -21,33 +21,56 @@ import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
-import { Button } from "@mui/material";
+import { Avatar, Button } from "@mui/material";
 
-function createData(id, name, calories, fat, carbs, protein) {
+function createData(id, profile, phone, gender, personalDetails, edu) {
   return {
     id,
-    name,
-    calories,
-    fat,
-    carbs,
-    protein,
+    profile,
+    phone,
+    gender,
+    personalDetails,
+    edu,
   };
 }
 
 const rows = [
-  createData(1, "Cupcake", 305, 3.7, 67, 4.3),
-  createData(2, "Donut", 452, 25.0, 51, 4.9),
-  createData(3, "Eclair", 262, 16.0, 24, 6.0),
-  createData(4, "Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData(5, "Gingerbread", 356, 16.0, 49, 3.9),
-  createData(6, "Honeycomb", 408, 3.2, 87, 6.5),
-  createData(7, "Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData(8, "Jelly Bean", 375, 0.0, 94, 0.0),
-  createData(9, "KitKat", 518, 26.0, 65, 7.0),
-  createData(10, "Lollipop", 392, 0.2, 98, 0.0),
-  createData(11, "Marshmallow", 318, 0, 81, 2.0),
-  createData(12, "Nougat", 360, 19.0, 9, 37.0),
-  createData(13, "Oreo", 437, 18.0, 63, 4.0),
+  createData(
+    1,
+    {
+      avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+      name: "Rohit Sharma",
+      email: "rohit@example.com",
+    },
+    "9876543210",
+    "M",
+    "DOB: 1990-04-23\nAddress: Mumbai",
+    "B.Tech CSE"
+  ),
+  createData(
+    2,
+    {
+      avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+      name: "Priya Singh",
+      email: "priya@example.com",
+    },
+    "9876501234",
+    "F",
+    "DOB: 1994-11-12\nAddress: Delhi",
+    "MBA HR"
+  ),
+  createData(
+    3,
+    {
+      avatar: "https://randomuser.me/api/portraits/men/3.jpg",
+      name: "Amit Verma",
+      email: "amit@example.com",
+    },
+    "9988776655",
+    "M",
+    "DOB: 1992-06-01\nAddress: Jaipur",
+    "MCA"
+  ),
 ];
 
 function descendingComparator(a, b, orderBy) {
@@ -67,36 +90,21 @@ function getComparator(order, orderBy) {
 }
 
 const headCells = [
+  { id: "profile", numeric: false, disablePadding: true, label: "Profile" },
+  { id: "phone", numeric: false, disablePadding: false, label: "Phone" },
   {
-    id: "name",
+    id: "gender",
     numeric: false,
-    disablePadding: true,
-    label: "Dessert (100g serving)",
+    disablePadding: false,
+    label: "Gender (M/F/O)",
   },
   {
-    id: "calories",
-    numeric: true,
+    id: "personalDetails",
+    numeric: false,
     disablePadding: false,
-    label: "Calories",
+    label: "Personal Details",
   },
-  {
-    id: "fat",
-    numeric: true,
-    disablePadding: false,
-    label: "Fat (g)",
-  },
-  {
-    id: "carbs",
-    numeric: true,
-    disablePadding: false,
-    label: "Carbs (g)",
-  },
-  {
-    id: "protein",
-    numeric: true,
-    disablePadding: false,
-    label: "Protein (g)",
-  },
+  { id: "edu", numeric: false, disablePadding: false, label: "Edu" },
 ];
 
 function UserTableHead(props) {
@@ -201,18 +209,17 @@ function UserTableToolbar(props) {
       {numSelected > 0 && (
         <Tooltip className="flex " title="Delete">
           <IconButton>
-          <Button variant="contained" disableElevation>
+            <Button variant="contained" disableElevation>
               Edit
             </Button>
           </IconButton>
-         <IconButton>
-         <Button variant="contained" color="success">
+          <IconButton>
+            <Button variant="contained" color="success">
               View
             </Button>
-         </IconButton>
-           
-          <IconButton >
-            
+          </IconButton>
+
+          <IconButton>
             <Button variant="outlined" color="error">
               Delete
             </Button>{" "}
@@ -332,9 +339,7 @@ export default function UserTable() {
                       <Checkbox
                         color="primary"
                         checked={isItemSelected}
-                        inputProps={{
-                          "aria-labelledby": labelId,
-                        }}
+                        inputProps={{ "aria-labelledby": labelId }}
                       />
                     </TableCell>
                     <TableCell
@@ -343,12 +348,29 @@ export default function UserTable() {
                       scope="row"
                       padding="none"
                     >
-                      {row.name}
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Avatar
+                          src={row.profile.avatar}
+                          sx={{ width: 40, height: 40, mr: 2 }}
+                        />
+                        <Box>
+                          <Typography variant="subtitle2">
+                            {row.profile.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {row.profile.email}
+                          </Typography>
+                        </Box>
+                      </Box>
                     </TableCell>
-                    <TableCell align="right">{row.calories}</TableCell>
-                    <TableCell align="right">{row.fat}</TableCell>
-                    <TableCell align="right">{row.carbs}</TableCell>
-                    <TableCell align="right">{row.protein}</TableCell>
+                    <TableCell>{row.phone}</TableCell>
+                    <TableCell>{row.gender}</TableCell>
+                    <TableCell>
+                      {row.personalDetails.split("\n").map((line, i) => (
+                        <div key={i}>{line}</div>
+                      ))}
+                    </TableCell>
+                    <TableCell>{row.edu}</TableCell>
                   </TableRow>
                 );
               })}
