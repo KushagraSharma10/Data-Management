@@ -1,16 +1,23 @@
-import React from 'react'
+import React from "react";
 
 const Header = () => {
   return (
-    <div className="upper mb-4 flex items-center justify-between">
-          <div className="search bg-white p-3 px-4 text-md rounded-4xl">
-            <input className='w-full outline-none'  type="search" placeholder="Search..." />
-          </div>
-          <a href='/user/create' className="btn px-3 py-2 text-sm font-semibold tracking-tight bg-orange-400 rounded-md text-white">
-            Add User
-          </a>
-        </div>
-  )
-}
+    <div className="upper mb-4 flex gap-3 items-center justify-between">
+      <div className="search w-full bg-white text-md rounded-lg">
+        <input
+          className="w-full outline-none p-3 px-4 rounded-lg active:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition duration-200 ease-in-out "
+          type="search"
+          placeholder="Search..."
+        />
+      </div>
+      <a
+        href="/user/create"
+        className="btn  px-5 whitespace-nowrap py-3 text-[1em] font-semibold tracking-tight bg-linear-90 bg-green-500 rounded-md text-white"
+      >
+        Add User
+      </a>
+    </div>
+  );
+};
 
-export default Header
+export default Header;

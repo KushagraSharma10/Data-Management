@@ -22,27 +22,47 @@ export default function RegisterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
-      const response = await axios.post("http://localhost:3000/create", formData);
+      const response = await axios.post(
+        "http://localhost:3000/create",
+        formData
+      );
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        gender: "",
+        birthDate: "",
+        age: "",
+        address: "",
+        city: "",
+        university: "",
+        password: "",
+      });
       console.log(response.data);
-      setFormData("")
     } catch (error) {
       console.error("There was an error submitting the form:", error);
     }
 
-    window.location.href = "/";
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 2000);
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4">
       <div className="flex bg-white rounded-2xl shadow-xl w-[65vw] p-8 gap-10">
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
-          <h2 className="text-3xl font-semibold tracking-tight text-blue-600 mb-2 text-center">Register</h2>
+          <h2 className="text-3xl font-semibold tracking-tight text-blue-600 mb-2 text-center">
+            Register
+          </h2>
 
           <div className="flex gap-4">
             <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">Full Name</label>
+              <label className="text-sm font-medium text-gray-700">
+                Full Name
+              </label>
               <input
                 type="text"
                 name="fullName"
@@ -78,7 +98,9 @@ export default function RegisterForm() {
               />
             </div>
             <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">Gender</label>
+              <label className="text-sm font-medium text-gray-700">
+                Gender
+              </label>
               <select
                 name="gender"
                 value={formData.gender}
@@ -96,7 +118,9 @@ export default function RegisterForm() {
 
           <div className="flex gap-4">
             <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">Date of Birth</label>
+              <label className="text-sm font-medium text-gray-700">
+                Date of Birth
+              </label>
               <input
                 type="date"
                 name="birthDate"
@@ -121,7 +145,9 @@ export default function RegisterForm() {
 
           <div className="flex gap-4">
             <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">Address</label>
+              <label className="text-sm font-medium text-gray-700">
+                Address
+              </label>
               <input
                 type="text"
                 name="address"
@@ -146,7 +172,9 @@ export default function RegisterForm() {
 
           <div className="flex gap-4">
             <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">University</label>
+              <label className="text-sm font-medium text-gray-700">
+                University
+              </label>
               <input
                 type="text"
                 name="university"
@@ -157,7 +185,9 @@ export default function RegisterForm() {
               />
             </div>
             <div className="w-1/2">
-              <label className="text-sm font-medium text-gray-700">Password</label>
+              <label className="text-sm font-medium text-gray-700">
+                Password
+              </label>
               <input
                 type="password"
                 name="password"
