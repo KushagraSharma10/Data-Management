@@ -345,7 +345,7 @@ export default function UserTable() {
                     <TableCell align="left">{row.phone}</TableCell>
                     <TableCell align="left">{row.gender}</TableCell>
                     <TableCell align="left">
-                      <Box>
+                      <Box sx={{ display: "flex", flexDirection: "column" }}>
                         {row.personalDetails.split("\n").map((line, i) => (
                           <Typography key={i} variant="body2">
                             {line}
