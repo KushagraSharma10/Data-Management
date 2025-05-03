@@ -199,7 +199,8 @@ export default function UserTable() {
     const fetchUsers = async () => {
       try {
         const response = await axios.get("http://localhost:3000/");
-        setUsers(response.data.users); // assuming data is array of users
+        setUsers(response.data);
+        
       } catch (error) {
         console.error("Failed to fetch users:", error);
       }
@@ -212,12 +213,12 @@ export default function UserTable() {
     id: user.id,
     profile: {
       avatar: user.image,
-      name: `${user.firstName} ${user.lastName}`,
+      name: user.fullName,
       email: user.email,
     },
     phone: user.phone,
     gender: user.gender.charAt(0).toUpperCase(),
-    personalDetails: `DOB: ${user.birthDate}, Age: ${user.age}\nAddress: ${user.address.address}, ${user.address.city}`,
+    personalDetails: `DOB: ${user.birthDate}, Age: ${user.age}\nAddress: ${user.address}, ${user.city}`,
     edu: user.university,
   }));
 
