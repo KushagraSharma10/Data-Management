@@ -60,7 +60,7 @@ export default function RegisterForm() {
              px-4 py-2 rounded-lg border 
              border-blue-500 
              bg-gradient-to-r from-blue-500 to-blue-600 
-             text-white transition-all duration-300 shadow-md hover:shadow-lg"
+             text-white text-md tracking-tight font-medium transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 "
 >
   <IoIosArrowBack className="text-lg" />
   Go Back

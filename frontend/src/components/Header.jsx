@@ -1,5 +1,6 @@
 import React from "react";
-import { IoIosSearch } from "react-icons/io";
+import { IoIosSearch, IoMdAdd } from "react-icons/io";
+import { Link } from "react-router";
 
 const Header = ({searchQuery, setSearchQuery}) => {
 
@@ -26,12 +27,13 @@ const Header = ({searchQuery, setSearchQuery}) => {
         <IoIosSearch className="search-icon w-7 h-7 absolute right-2 top-3" />
       </div>
       
-      <a
+      <Link to="/user/create"
         href="/user/create"
-        className="btn  px-5 whitespace-nowrap py-3 text-[1em] font-semibold tracking-tight bg-linear-90 bg-green-500 rounded-md text-white"
+        className="flex items-center gap-2 px-5 py-3 whitespace-nowrap font-semibold tracking-tight rounded-lg shadow-md bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:scale-105 hover:shadow-lg transition-all duration-300"
       >
+        <IoMdAdd className="text-lg" />
         Add User
-      </a>
+      </Link>
     </div>
   );
 };
