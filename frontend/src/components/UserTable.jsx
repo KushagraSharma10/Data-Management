@@ -213,7 +213,7 @@ export default function UserTable({searchQuery}) {
   const rows = users.map((user) => ({
     id: user._id,
     profile: {
-      avatar: user.image,
+      avatar: user.image || "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg",
       name: user.fullName,
       email: user.email,
     },

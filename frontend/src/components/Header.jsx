@@ -16,7 +16,7 @@ const Header = ({searchQuery, setSearchQuery}) => {
     <div className="upper mb-4 flex gap-3 items-center justify-between">
       <div className="relative search w-full bg-white text-md rounded-lg">
         <input
-          className="w-full outline-none p-3 px-6 rounded-lg active:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition duration-200 ease-in-out "
+          className="w-full border-grey-100 outline-none p-3 px-6 rounded-lg active:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition duration-200 ease-in-out "
           type="search"
           placeholder="Search..."
           onChange={handleSearch}
