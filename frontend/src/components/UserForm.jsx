@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
-
+import { IoIosArrowBack } from "react-icons/io";
+import { Link } from "react-router";
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -52,6 +53,18 @@ export default function RegisterForm() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4">
+     
+<Link
+  to="/"
+  className="absolute top-5 left-6 flex items-center gap-2 
+             px-4 py-2 rounded-lg border 
+             border-blue-500 
+             bg-gradient-to-r from-blue-500 to-blue-600 
+             text-white transition-all duration-300 shadow-md hover:shadow-lg"
+>
+  <IoIosArrowBack className="text-lg" />
+  Go Back
+</Link>
       <div className="flex bg-white rounded-2xl shadow-xl w-[65vw] p-8 gap-10">
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <h2 className="text-3xl font-semibold tracking-tight text-blue-600 mb-2 text-center">
