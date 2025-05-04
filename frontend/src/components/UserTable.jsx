@@ -187,7 +187,7 @@ UserTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
-export default function UserTable() {
+export default function UserTable({searchQuery}) {
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
   const [selected, setSelected] = React.useState([]);
@@ -211,7 +211,7 @@ export default function UserTable() {
   }, []);
 
   const rows = users.map((user) => ({
-    id: user.id,
+    id: user._id,
     profile: {
       avatar: user.image,
       name: user.fullName,
@@ -219,9 +219,10 @@ export default function UserTable() {
     },
     phone: user.phone,
     gender: user.gender.charAt(0).toUpperCase(),
-    personalDetails: `DOB: ${user.birthDate}, Age: ${user.age}\nAddress: ${user.address}, ${user.city}`,
+    personalDetails: `DOB: ${user.birthDate}\nAge: ${user.age}\nAddress: ${user.address}, ${user.city}`,
     edu: user.university,
   }));
+
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -268,14 +269,17 @@ export default function UserTable() {
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
-
-  const visibleRows = React.useMemo(
-    () =>
-      [...rows]
-        .sort(getComparator(order, orderBy))
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [order, orderBy, page, rowsPerPage, rows]
-  );
+    const filteredRows = rows.filter((row) =>
+      row.profile.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    const visibleRows = React.useMemo(
+      () =>
+        [...filteredRows]
+          .sort(getComparator(order, orderBy))
+          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+      [order, orderBy, page, rowsPerPage, filteredRows]
+    );
 
   return (
     <Box sx={{ width: "100%" }}>
