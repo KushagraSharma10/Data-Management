@@ -1,15 +1,18 @@
 import React from "react";
+import { IoIosSearch } from "react-icons/io";
 
 const Header = () => {
   return (
     <div className="upper mb-4 flex gap-3 items-center justify-between">
-      <div className="search w-full bg-white text-md rounded-lg">
+      <div className="relative search w-full bg-white text-md rounded-lg">
         <input
-          className="w-full outline-none p-3 px-4 rounded-lg active:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition duration-200 ease-in-out "
+          className="w-full outline-none p-3 px-6 rounded-lg active:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition duration-200 ease-in-out "
           type="search"
           placeholder="Search..."
         />
+        <IoIosSearch className="w-7 h-7 absolute right-2 top-3" />
       </div>
+      
       <a
         href="/user/create"
         className="btn  px-5 whitespace-nowrap py-3 text-[1em] font-semibold tracking-tight bg-linear-90 bg-green-500 rounded-md text-white"
