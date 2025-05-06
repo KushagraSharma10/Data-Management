@@ -21,6 +21,10 @@ let router = createBrowserRouter([
     path: "/user/create",
     element: <UserForm />
   },
+  {
+    path: "/user/:userId",
+    element: <UserForm />
+  },
 ]);
 
 createRoot(document.getElementById('root')).render(

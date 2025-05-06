@@ -1,8 +1,9 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 export default function RegisterForm() {
+  const { userId } = useParams(); // get id from url
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -16,6 +17,21 @@ export default function RegisterForm() {
     password: "",
   });
 
+  useEffect(() => {
+    if (userId) {
+      fetchUserDetails();
+    }
+  }, [userId]);
+
+  const fetchUserDetails = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/user/${userId}`);
+      setFormData(response.data);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -23,48 +39,31 @@ export default function RegisterForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await axios.post(
-        "http://localhost:3000/create",
-        formData
-      );
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        gender: "",
-        birthDate: "",
-        age: "",
-        address: "",
-        city: "",
-        university: "",
-        password: "",
-      });
-      console.log(response.data);
+      if (userId) {
+        await axios.put(`http://localhost:3000/user/${id}`, formData);
+      } else {
+        await axios.post("http://localhost:3000/create", formData);
+      }
+      window.location.href = "/";
     } catch (error) {
       console.error("There was an error submitting the form:", error);
     }
-
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 2000);
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center items-center px-4">
-     
-<Link
-  to="/"
-  className="absolute top-5 left-6 flex items-center gap-2 
+      <Link
+        to="/"
+        className="absolute top-5 left-6 flex items-center gap-2 
              px-4 py-2 rounded-lg border 
              border-blue-500 
              bg-gradient-to-r from-blue-500 to-blue-600 
              text-white text-md tracking-tight font-medium transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 "
->
-  <IoIosArrowBack className="text-lg" />
-  Go Back
-</Link>
+      >
+        <IoIosArrowBack className="text-lg" />
+        Go Back
+      </Link>
       <div className="flex bg-white rounded-2xl shadow-xl w-[65vw] p-8 gap-10">
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <h2 className="text-3xl font-semibold tracking-tight text-blue-600 mb-2 text-center">

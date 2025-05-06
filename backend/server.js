@@ -35,6 +35,15 @@ fastify.post("/create", async (request, reply) => {
     return reply.status(201).send(newUser);
 });
 
+fastify.get("/user/:userId", async (request, reply) => {
+    const { userId } = request.params;
+    const user = await collection.findOne({ _id: new fastify.mongo.ObjectId(userId) });
+    if (!user) {
+        return reply.status(404).send({ message: "User not found" });
+    }
+    return reply.status(200).send(user);
+})
+
 
 fastify.listen({ port: 3000 }, (err, address) => {
     if (err) {

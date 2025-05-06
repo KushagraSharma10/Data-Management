@@ -24,7 +24,7 @@ import { visuallyHidden } from "@mui/utils";
 import { Avatar, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import { Link } from "react-router";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -123,7 +123,8 @@ UserTableHead.propTypes = {
 };
 
 function UserTableToolbar(props) {
-  const { numSelected } = props;
+  const { numSelected, selected } = props;
+  const selectedUserId = selected.length > 0 ? selected[0] : null;
   return (
     <Toolbar
       sx={[
@@ -167,9 +168,11 @@ function UserTableToolbar(props) {
             </Button>
           </IconButton>
           <IconButton>
-            <Button variant="contained" color="success">
-              View
-            </Button>
+            <Link to={`/user/${selectedUserId}`}>
+              <Button variant="contained" color="success">
+                View
+              </Button>
+            </Link>
           </IconButton>
 
           <IconButton>
@@ -187,12 +190,12 @@ UserTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
-export default function UserTable({searchQuery}) {
+export default function UserTable({ searchQuery }) {
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
+  // const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [users, setUsers] = useState([]);
 
@@ -201,7 +204,6 @@ export default function UserTable({searchQuery}) {
       try {
         const response = await axios.get("http://localhost:3000/");
         setUsers(response.data);
-        
       } catch (error) {
         console.error("Failed to fetch users:", error);
       }
@@ -213,7 +215,9 @@ export default function UserTable({searchQuery}) {
   const rows = users.map((user) => ({
     id: user._id,
     profile: {
-      avatar: user.image || "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg",
+      avatar:
+        user.image ||
+        "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg",
       name: user.fullName,
       email: user.email,
     },
@@ -222,7 +226,6 @@ export default function UserTable({searchQuery}) {
     personalDetails: `DOB: ${user.birthDate}\nAge: ${user.age}\nAddress: ${user.address}, ${user.city}`,
     edu: user.university,
   }));
-
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -269,27 +272,27 @@ export default function UserTable({searchQuery}) {
 
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
-    const filteredRows = rows.filter((row) =>
-      row.profile.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    
-    const visibleRows = React.useMemo(
-      () =>
-        [...filteredRows]
-          .sort(getComparator(order, orderBy))
-          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-      [order, orderBy, page, rowsPerPage, filteredRows]
-    );
+  const filteredRows = rows.filter((row) =>
+    row.profile.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const visibleRows = React.useMemo(
+    () =>
+      [...filteredRows]
+        .sort(getComparator(order, orderBy))
+        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
+    [order, orderBy, page, rowsPerPage, filteredRows]
+  );
 
   return (
     <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
-        <UserTableToolbar numSelected={selected.length} />
+        <UserTableToolbar numSelected={selected.length} selected = {selected} />
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
             aria-labelledby="tableTitle"
-            size={dense ? "small" : "medium"}
+            size={"medium"}
           >
             <UserTableHead
               numSelected={selected.length}
@@ -351,7 +354,13 @@ export default function UserTable({searchQuery}) {
                     <TableCell align="left">{row.phone}</TableCell>
                     <TableCell align="left">{row.gender}</TableCell>
                     <TableCell align="left">
-                      <Box sx={{ display: "flex", flexDirection: "column", width:"20vw" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          width: "20vw",
+                        }}
+                      >
                         {row.personalDetails.split("\n").map((line, i) => (
                           <Typography key={i} variant="body2">
                             {line}
@@ -366,7 +375,7 @@ export default function UserTable({searchQuery}) {
               {emptyRows > 0 && (
                 <TableRow
                   style={{
-                    height: (dense ? 33 : 53) * emptyRows,
+                    height: 53 * emptyRows,
                   }}
                 >
                   <TableCell colSpan={6} />

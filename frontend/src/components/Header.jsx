@@ -9,6 +9,7 @@ const Header = ({searchQuery, setSearchQuery}) => {
     e.preventDefault();
     const searchTerm = e.target.value;
     searchIcon.style.display = searchTerm ? "none" : "block";
+    
     setSearchQuery(searchTerm);
     console.log(searchTerm);
   }
