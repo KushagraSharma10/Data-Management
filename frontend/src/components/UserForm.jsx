@@ -612,6 +612,7 @@ export default function UserForm() {
   });
 
   const onSubmit = async (data) => {
+    console.log("Form Data:", data);
     await axios.post("http://localhost:3000/create", data)
       .then((response) => {
         console.log("User created successfully:", response.data);
@@ -621,6 +622,8 @@ export default function UserForm() {
       })
     
   };
+
+
 
 
  const inputs = [
