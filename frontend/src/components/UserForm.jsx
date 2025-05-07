@@ -528,75 +528,74 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
+import { IoIosArrowRoundBack } from "react-icons/io";
 
-// Validation schema (same as yours)
 const schema = yup.object().shape({
-  id: yup.number().required(),
   firstName: yup.string().required("First Name is required"),
   lastName: yup.string().required("Last Name is required"),
   maidenName: yup.string().required("Maiden Name is required"),
-  age: yup.number().positive().integer().required("Age is required"),
+  age: yup.number().positive("Age must be positive").integer("Age must be an integer").required("Age is required"),
   gender: yup.string().required("Gender is required"),
-  email: yup.string().email().required("Email is required"),
+  email: yup.string().email("Invalid email format").required("Email is required"),
   phone: yup.string().required("Phone is required"),
   username: yup.string().required("Username is required"),
-  password: yup.string().min(6).required("Password is required"),
+  password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
   birthDate: yup.string().required("Birth Date is required"),
-  image: yup.string().url().required("Image URL is required"),
+  image: yup.string().url("Invalid image URL").required("Image URL is required"),
   bloodGroup: yup.string().required("Blood Group is required"),
-  height: yup.number().positive().required("Height is required"),
-  weight: yup.number().positive().required("Weight is required"),
+  height: yup.number().positive("Height must be positive").required("Height is required"),
+  weight: yup.number().positive("Weight must be positive").required("Weight is required"),
   eyeColor: yup.string().required("Eye Color is required"),
-  hair: yup.object({
+  hair: yup.object().shape({
     color: yup.string().required("Hair Color is required"),
     type: yup.string().required("Hair Type is required"),
-  }),
+  }).required("Hair details are required"),
   domain: yup.string().required("Domain is required"),
   ip: yup.string().required("IP Address is required"),
   macAddress: yup.string().required("MAC Address is required"),
   university: yup.string().required("University is required"),
-  address: yup.object({
-    address: yup.string().required(),
-    city: yup.string().required(),
-    state: yup.string().required(),
-    postalCode: yup.string().required(),
-    country: yup.string().required(),
-    coordinates: yup.object({
-      lat: yup.number().required(),
-      lng: yup.number().required()
-    }),
-  }),
-  bank: yup.object({
-    cardExpire: yup.string().required(),
-    cardNumber: yup.string().required(),
-    cardType: yup.string().required(),
-    currency: yup.string().required(),
-    iban: yup.string().required(),
-  }),
-  company: yup.object({
-    department: yup.string().required(),
-    name: yup.string().required(),
-    title: yup.string().required(),
-    address: yup.object({
-      address: yup.string().required(),
-      city: yup.string().required(),
-      state: yup.string().required(),
-      postalCode: yup.string().required(),
-      coordinates: yup.object({
-        lat: yup.number().required(),
-        lng: yup.number().required(),
-      }),
-    }),
-  }),
-  ein: yup.string().required(),
-  ssn: yup.string().required(),
-  userAgent: yup.string().required(),
-  crypto: yup.object({
-    coin: yup.string().required(),
-    wallet: yup.string().required(),
-    network: yup.string().required(),
-  }),
-  role: yup.string().required()
+  address: yup.object().shape({
+    address: yup.string().required("Address is required"),
+    city: yup.string().required("City is required"),
+    state: yup.string().required("State is required"),
+    postalCode: yup.string().required("Postal Code is required"),
+    country: yup.string().required("Country is required"),
+    coordinates: yup.object().shape({
+      lat: yup.number().required("Latitude is required"),
+      lng: yup.number().required("Longitude is required"),
+    }).required("Coordinates are required"),
+  }).required("Address is required"),
+  bank: yup.object().shape({
+    cardExpire: yup.string().required("Card Expiry Date is required"),
+    cardNumber: yup.string().required("Card Number is required"),
+    cardType: yup.string().required("Card Type is required"),
+    currency: yup.string().required("Currency is required"),
+    iban: yup.string().required("IBAN is required"),
+  }).required("Bank details are required"),
+  company: yup.object().shape({
+    department: yup.string().required("Department is required"),
+    name: yup.string().required("Company Name is required"),
+    title: yup.string().required("Job Title is required"),
+    address: yup.object().shape({
+      address: yup.string().required("Company Address is required"),
+      city: yup.string().required("Company City is required"),
+      state: yup.string().required("Company State is required"),
+      postalCode: yup.string().required("Company Postal Code is required"),
+      coordinates: yup.object().shape({
+        lat: yup.number().required("Company Latitude is required"),
+        lng: yup.number().required("Company Longitude is required"),
+      }).required("Company Coordinates are required"),
+    }).required("Company Address is required"),
+  }).required("Company details are required"),
+  ein: yup.string().required("EIN is required"),
+  ssn: yup.string().required("SSN is required"),
+  userAgent: yup.string().required("User Agent is required"),
+  crypto: yup.object().shape({
+    coin: yup.string().required("Crypto Coin is required"),
+    wallet: yup.string().required("Crypto Wallet is required"),
+    network: yup.string().required("Crypto Network is required"),
+  }).required("Crypto details are required"),
+  role: yup.string().required("Role is required"),
 });
 
 export default function UserForm() {
@@ -687,7 +686,7 @@ const inputs = [
         <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">User Registration</h1>
         <form 
           onSubmit={handleSubmit(onSubmit)} 
-          className="grid grid-cols-2 gap-6 max-h-[600px] overflow-y-auto p-2 pr-4"
+          className="grid grid-cols-2 gap-6 max-h-[75vh] overflow-y-auto p-2 pr-4"
         >
           {inputs.map((field) => (
             <div key={field.name} className="flex flex-col">
@@ -712,7 +711,7 @@ const inputs = [
         </form>
       </div>
       <div className="absolute top-5 left-6 flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-500 bg-gradient-to-r from-blue-500  to-blue-600 text-white text-md tracking-tight font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105">
-        <Link to="/" className="text-md">Go Back</Link>
+        <Link to="/" className="text-md flex items-center justify-center gap-1"> <IoIosArrowRoundBack  className="text-2xl"/>Go Back</Link>
 </div>
 
     </div>
