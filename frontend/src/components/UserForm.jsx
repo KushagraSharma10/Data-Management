@@ -521,18 +521,180 @@
 //   );
 // }
 
-
 import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
+// Validation Schema
+const schema = yup.object().shape({
+  // Basic Information
+  id: yup.number().required(),
+  firstName: yup.string().required("First Name is required"),
+  lastName: yup.string().required("Last Name is required"),
+  maidenName: yup.string().required("Maiden Name is required"),
+  age: yup.number()
+    .positive("Age must be positive")
+    .integer("Age must be an integer")
+    .required("Age is required"),
+  gender: yup.string().required("Gender is required"),
+  email: yup.string().email("Invalid email").required("Email is required"),
+  phone: yup.string().required("Phone is required"),
+  username: yup.string().required("Username is required"),
+  password: yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
+  birthDate: yup.string().required("Birth Date is required"),
+  image: yup.string().url("Must be a valid URL").required("Image URL is required"),
+  
+  // Physical Attributes
+  bloodGroup: yup.string().required("Blood Group is required"),
+  height: yup.number()
+    .positive("Height must be positive")
+    .required("Height is required"),
+  weight: yup.number()
+    .positive("Weight must be positive")
+    .required("Weight is required"),
+  eyeColor: yup.string().required("Eye Color is required"),
+  hair: yup.object({
+    color: yup.string().required("Hair Color is required"),
+    type: yup.string().required("Hair Type is required")
+  }),
+  
+  // Contact Information
+  domain: yup.string().required("Domain is required"),
+  ip: yup.string().required("IP Address is required"),
+  macAddress: yup.string().required("MAC Address is required"),
+  university: yup.string().required("University is required"),
+  
+  // Address Information
+  address: yup.object({
+    address: yup.string().required("Street Address is required"),
+    city: yup.string().required("City is required"),
+    state: yup.string().required("State is required"),
+    postalCode: yup.string().required("Postal Code is required"),
+    country: yup.string().required("Country is required"),
+    coordinates: yup.object({
+      lat: yup.number().required("Latitude is required"),
+      lng: yup.number().required("Longitude is required")
+    })
+  }),
+  
+  // Financial Information
+  bank: yup.object({
+    cardExpire: yup.string().required("Card Expiry is required"),
+    cardNumber: yup.string().required("Card Number is required"),
+    cardType: yup.string().required("Card Type is required"),
+    currency: yup.string().required("Currency is required"),
+    iban: yup.string().required("IBAN is required")
+  }),
+  
+  // Employment Information
+  company: yup.object({
+    department: yup.string().required("Department is required"),
+    name: yup.string().required("Company Name is required"),
+    title: yup.string().required("Job Title is required"),
+    address: yup.object({
+      address: yup.string().required("Company Address is required"),
+      city: yup.string().required("Company City is required"),
+      state: yup.string().required("Company State is required"),
+      postalCode: yup.string().required("Company Postal Code is required"),
+      coordinates: yup.object({
+        lat: yup.number().required("Company Latitude is required"),
+        lng: yup.number().required("Company Longitude is required")
+      })
+    })
+  }),
+  
+  // Identification
+  ein: yup.string().required("EIN is required"),
+  ssn: yup.string().required("SSN is required"),
+  
+  // Technical Information
+  userAgent: yup.string().required("User Agent is required"),
+  
+  // Cryptocurrency
+  crypto: yup.object({
+    coin: yup.string().required("Coin is required"),
+    wallet: yup.string().required("Wallet is required"),
+    network: yup.string().required("Network is required")
+  }),
+  
+  // Role
+  role: yup.string().required("Role is required")
+});
+
 export default function UserForm() {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+  });
 
   const onSubmit = (data) => {
     console.log(data);
   };
+
+  const inputs = [
+    { label: "First Name", name: "firstName", type: "text" },
+    { label: "Last Name", name: "lastName", type: "text" },
+    { label: "Maiden Name", name: "maidenName", type: "text" },
+    { label: "Age", name: "age", type: "number" },
+    { label: "Gender", name: "gender", type: "text" },
+    { label: "Email", name: "email", type: "email" },
+    { label: "Phone", name: "phone", type: "tel" },
+    { label: "Username", name: "username", type: "text" },
+    { label: "Password", name: "password", type: "password" },
+    { label: "Birth Date", name: "birthDate", type: "date" },
+    { label: "Image URL", name: "image", type: "text" },
+    { label: "Blood Group", name: "bloodGroup", type: "text" },
+    { label: "Height (in cm)", name: "height", type: "number" },
+    { label: "Weight (in kg)", name: "weight", type: "number" },
+    { label: "Eye Color", name: "eyeColor", type: "text" },
+    { label: "Hair Color", name: "hairColor", type: "text" },
+    { label: "Domain", name: "domain", type: "text" },
+    { label: "IP Address", name: "ip", type: "text" },
+    { label: "University", name: "university", type: "text" },
+    { label: "Company Name", name: "companyName", type: "text" },
+    { label: "Department", name: "department", type: "text" },
+    { label: "Address", name: "address", type: "text" },
+    { label: "Role", name: "role", type: "text" },
+    { label: "Maiden Name", name: "maidenName", type: "text" },
+  { label: "Blood Group", name: "bloodGroup", type: "text" },
+  { label: "Hair Color", name: "hair.color", type: "text" },
+  { label: "Hair Type", name: "hair.type", type: "text" },
+  { label: "Domain", name: "domain", type: "text" },
+  { label: "MAC Address", name: "macAddress", type: "text" },
+  
+  // Address Fields
+  { label: "Street Address", name: "address.address", type: "text" },
+  { label: "City", name: "address.city", type: "text" },
+  { label: "State", name: "address.state", type: "text" },
+  { label: "Postal Code", name: "address.postalCode", type: "text" },
+  { label: "Country", name: "address.country", type: "text" },
+  { label: "Latitude", name: "address.coordinates.lat", type: "number" },
+  { label: "Longitude", name: "address.coordinates.lng", type: "number" },
+  
+  // Bank Fields
+  { label: "Card Expiry", name: "bank.cardExpire", type: "text" },
+  { label: "Card Number", name: "bank.cardNumber", type: "text" },
+  { label: "Card Type", name: "bank.cardType", type: "text" },
+  { label: "Currency", name: "bank.currency", type: "text" },
+  { label: "IBAN", name: "bank.iban", type: "text" },
+  
+  // Company Fields
+  { label: "Department", name: "company.department", type: "text" },
+  { label: "Company Name", name: "company.name", type: "text" },
+  { label: "Job Title", name: "company.title", type: "text" },
+  
+  // Other Fields
+  { label: "EIN", name: "ein", type: "text" },
+  { label: "SSN", name: "ssn", type: "text" },
+  { label: "User Agent", name: "userAgent", type: "text" },
+  { label: "Crypto Coin", name: "crypto.coin", type: "text" },
+  { label: "Crypto Wallet", name: "crypto.wallet", type: "text" },
+  { label: "Crypto Network", name: "crypto.network", type: "text" }
+  ]
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-200 p-4">
@@ -544,149 +706,19 @@ export default function UserForm() {
           onSubmit={handleSubmit(onSubmit)} 
           className="grid grid-cols-2 gap-6 max-h-[600px] overflow-y-auto p-2 pr-4"
         >
-          {/* First Name */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">First Name</Label>
-            <Input {...register("firstName")} placeholder="Enter your first name" />
-          </div>
-
-          {/* Last Name */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Last Name</Label>
-            <Input {...register("lastName")} placeholder="Enter your last name" />
-          </div>
-
-          {/* Maiden Name */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Maiden Name</Label>
-            <Input {...register("maidenName")} placeholder="Enter your maiden name" />
-          </div>
-
-          {/* Age */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Age</Label>
-            <Input type="number" {...register("age")} placeholder="Enter your age" />
-          </div>
-
-          {/* Gender */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Gender</Label>
-            <Input {...register("gender")} placeholder="Enter your gender" />
-          </div>
-
-          {/* Email */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Email</Label>
-            <Input type="email" {...register("email")} placeholder="Enter your email" />
-          </div>
-
-          {/* Phone */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Phone</Label>
-            <Input type="tel" {...register("phone")} placeholder="Enter your phone number" />
-          </div>
-
-          {/* Username */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Username</Label>
-            <Input {...register("username")} placeholder="Enter your username" />
-          </div>
-
-          {/* Password */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Password</Label>
-            <Input type="password" {...register("password")} placeholder="Enter your password" />
-          </div>
-
-          {/* Birth Date */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Birth Date</Label>
-            <Input type="date" {...register("birthDate")} />
-          </div>
-
-          {/* Image URL */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Image URL</Label>
-            <Input {...register("image")} placeholder="Enter image URL" />
-          </div>
-
-          {/* Blood Group */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Blood Group</Label>
-            <Input {...register("bloodGroup")} placeholder="Enter blood group" />
-          </div>
-
-          {/* Height */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Height (in cm)</Label>
-            <Input type="number" {...register("height")} placeholder="Enter height" />
-          </div>
-
-          {/* Weight */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Weight (in kg)</Label>
-            <Input type="number" {...register("weight")} placeholder="Enter weight" />
-          </div>
-
-          {/* Eye Color */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Eye Color</Label>
-            <Input {...register("eyeColor")} placeholder="Enter eye color" />
-          </div>
-
-          {/* Hair Color */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Hair Color</Label>
-            <Input {...register("hairColor")} placeholder="Enter hair color" />
-          </div>
-
-          {/* Domain */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Domain</Label>
-            <Input {...register("domain")} placeholder="Enter your domain" />
-          </div>
-
-          {/* IP Address */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">IP Address</Label>
-            <Input {...register("ip")} placeholder="Enter your IP address" />
-          </div>
-
-          {/* University */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">University</Label>
-            <Input {...register("university")} placeholder="Enter university name" />
-          </div>
-
-          {/* Company Name */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Company Name</Label>
-            <Input {...register("companyName")} placeholder="Enter company name" />
-          </div>
-
-          {/* Department */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Department</Label>
-            <Input {...register("department")} placeholder="Enter department" />
-          </div>
-
-          {/* Address */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Address</Label>
-            <Input {...register("address")} placeholder="Enter address" />
-          </div>
-
-          {/* Role */}
-          <div className="flex flex-col">
-            <Label className="text-md font-semibold mb-1 text-gray-700">Role</Label>
-            <Input {...register("role")} placeholder="Enter role" />
-          </div>
+          {inputs.map((field) => (
+            <div key={field.name} className="flex flex-col">
+              <Label className="text-md font-semibold mb-1 text-gray-700">{field.label}</Label>
+              <Input type={field.type} {...register(field.name)} placeholder={`Enter ${field.label.toLowerCase()}`} />
+              {errors[field.name] && <p className="text-red-500 text-sm">{errors[field.name]?.message}</p>}
+            </div>
+          ))}
         </form>
 
         <Button
           type="submit"
           onClick={handleSubmit(onSubmit)}
-          className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition duration-300"
+          className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300"
         >
           Submit
         </Button>
