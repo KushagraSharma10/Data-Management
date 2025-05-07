@@ -615,7 +615,7 @@ export default function UserForm() {
   };
 
 
-const inputs = [
+ const inputs = [
   { label: "First Name", name: "firstName", type: "text" },
   { label: "Last Name", name: "lastName", type: "text" },
   { label: "Maiden Name", name: "maidenName", type: "text" },

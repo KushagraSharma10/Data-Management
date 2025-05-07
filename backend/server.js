@@ -36,31 +36,128 @@ fastify.get("/", async (request, reply) => {
 
 fastify.post("/create", async (request, reply) => {
   const {
-    fullName,
+    id,
+    firstName,
+    lastName,
+    maidenName,
+    age,
+    gender,
     email,
     phone,
-    gender,
-    birthDate,
-    age,
-    address,
-    city,
-    university,
+    username,
     password,
+    birthDate,
+    image,
+    bloodGroup,
+    height,
+    weight,
+    eyeColor,
+    hair: { color, type },
+    domain,
+    ip,
+    macAddress,
+    university,
+    address: {
+      address,
+      city,
+      state,
+      postalCode,
+      country,
+      coordinates: { lat, lng }
+    },
+    bank: {
+      cardExpire,
+      cardNumber,
+      cardType,
+      currency,
+      iban
+    },
+    company: {
+      department,
+      name,
+      title,
+      address: {
+        address: companyAddress,
+        city: companyCity,
+        state: companyState,
+        postalCode: companyPostalCode,
+        coordinates: { lat: companyLat, lng: companyLng }
+      }
+    },
+    ein,
+    ssn,
+    userAgent,
+    crypto: {
+      coin,
+      wallet,
+      network
+    },
+    role
   } = request.body;
+
   const newUser = await collection.insertOne({
-    fullName,
+    id,
+    firstName,
+    lastName,
+    maidenName,
+    age,
+    gender,
     email,
     phone,
-    gender,
-    birthDate,
-    age,
-    address,
-    city,
-    university,
+    username,
     password,
+    birthDate,
+    image,
+    bloodGroup,
+    height,
+    weight,
+    eyeColor,
+    hair: { color, type },
+    domain,
+    ip,
+    macAddress,
+    university,
+    address: {
+      address,
+      city,
+      state,
+      postalCode,
+      country,
+      coordinates: { lat, lng }
+    },
+    bank: {
+      cardExpire,
+      cardNumber,
+      cardType,
+      currency,
+      iban
+    },
+    company: {
+      department,
+      name,
+      title,
+      address: {
+        address: companyAddress,
+        city: companyCity,
+        state: companyState,
+        postalCode: companyPostalCode,
+        coordinates: { lat: companyLat, lng: companyLng }
+      }
+    },
+    ein,
+    ssn,
+    userAgent,
+    crypto: {
+      coin,
+      wallet,
+      network
+    },
+    role
   });
+
   return reply.status(201).send(newUser);
 });
+
 
 fastify.get("/user/:userId", async (request, reply) => {
   const { userId } = request.params;
