@@ -529,6 +529,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
 import { IoIosArrowRoundBack } from "react-icons/io";
+import axios from "axios";
 
 const schema = yup.object().shape({
   firstName: yup.string().required("First Name is required"),
@@ -610,8 +611,15 @@ export default function UserForm() {
     }
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    await axios.post("http://localhost:3000/create", data)
+      .then((response) => {
+        console.log("User created successfully:", response.data);
+      })
+      .catch((error) => {
+        console.error("There was an error creating the user:", error);
+      })
+    
   };
 
 
