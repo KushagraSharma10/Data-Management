@@ -223,7 +223,6 @@
 //   );
 // }
 
-
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -237,81 +236,277 @@ export default function UserForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4 max-w-md mx-auto">
-      {/* First Name */}
+
+    <div className="p-10 bg-zinc-200">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-zinc-100 p-6 rounded-2xl shadow-md border-1 grid grid-cols-2 gap-2">
+      {/* Basic Info */}
       <div>
-        <Label htmlFor="firstName">First Name</Label>
-        <Input id="firstName" {...register("firstName")} placeholder="First Name" />
+        <Label>First Name</Label>
+        <Input {...register("firstName")} />
       </div>
 
-      {/* Last Name */}
       <div>
-        <Label htmlFor="lastName">Last Name</Label>
-        <Input id="lastName" {...register("lastName")} placeholder="Last Name" />
+        <Label>Last Name</Label>
+        <Input {...register("lastName")} />
       </div>
 
-      {/* Maiden Name */}
       <div>
-        <Label htmlFor="maidenName">Maiden Name</Label>
-        <Input id="maidenName" {...register("maidenName")} placeholder="Maiden Name" />
+        <Label>Maiden Name</Label>
+        <Input {...register("maidenName")} />
       </div>
 
-      {/* Age */}
       <div>
-        <Label htmlFor="age">Age</Label>
-        <Input id="age" type="number" {...register("age")} placeholder="Age" />
+        <Label>Age</Label>
+        <Input type="number" {...register("age")} />
       </div>
 
-      {/* Gender */}
       <div>
-        <Label htmlFor="gender">Gender</Label>
-        <Input id="gender" {...register("gender")} placeholder="Gender" />
+        <Label>Gender</Label>
+        <Input {...register("gender")} />
       </div>
 
-      {/* Email */}
       <div>
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" {...register("email")} placeholder="Email" />
+        <Label>Email</Label>
+        <Input type="email" {...register("email")} />
       </div>
 
-      {/* Phone */}
       <div>
-        <Label htmlFor="phone">Phone</Label>
-        <Input id="phone" {...register("phone")} placeholder="Phone" />
+        <Label>Phone</Label>
+        <Input {...register("phone")} />
       </div>
 
-      {/* Username */}
       <div>
-        <Label htmlFor="username">Username</Label>
-        <Input id="username" {...register("username")} placeholder="Username" />
+        <Label>Username</Label>
+        <Input {...register("username")} />
       </div>
 
-      {/* Password */}
       <div>
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" {...register("password")} placeholder="Password" />
+        <Label>Password</Label>
+        <Input type="password" {...register("password")} />
       </div>
 
-      {/* Birth Date */}
       <div>
-        <Label htmlFor="birthDate">Birth Date</Label>
-        <Input id="birthDate" type="date" {...register("birthDate")} />
+        <Label>Birth Date</Label>
+        <Input type="date" {...register("birthDate")} />
       </div>
 
-      {/* Blood Group */}
       <div>
-        <Label htmlFor="bloodGroup">Blood Group</Label>
-        <Input id="bloodGroup" {...register("bloodGroup")} placeholder="Blood Group" />
+        <Label>Image URL</Label>
+        <Input {...register("image")} />
+      </div>
+
+      <div>
+        <Label>Blood Group</Label>
+        <Input {...register("bloodGroup")} />
+      </div>
+
+      <div>
+        <Label>Height</Label>
+        <Input type="number" step="0.01" {...register("height")} />
+      </div>
+
+      <div>
+        <Label>Weight</Label>
+        <Input type="number" step="0.01" {...register("weight")} />
+      </div>
+
+      <div>
+        <Label>Eye Color</Label>
+        <Input {...register("eyeColor")} />
+      </div>
+
+      {/* Hair */}
+      <div>
+        <Label>Hair Color</Label>
+        <Input {...register("hair.color")} />
+      </div>
+
+      <div>
+        <Label>Hair Type</Label>
+        <Input {...register("hair.type")} />
+      </div>
+
+      {/* Address */}
+      <div>
+        <Label>Address</Label>
+        <Input {...register("address.address")} />
+      </div>
+
+      <div>
+        <Label>City</Label>
+        <Input {...register("address.city")} />
+      </div>
+
+      <div>
+        <Label>State</Label>
+        <Input {...register("address.state")} />
+      </div>
+
+      <div>
+        <Label>State Code</Label>
+        <Input {...register("address.stateCode")} />
+      </div>
+
+      <div>
+        <Label>Postal Code</Label>
+        <Input {...register("address.postalCode")} />
+      </div>
+
+      <div>
+        <Label>Country</Label>
+        <Input {...register("address.country")} />
+      </div>
+
+      <div>
+        <Label>Latitude</Label>
+        <Input type="number" step="0.00001" {...register("address.coordinates.lat")} />
+      </div>
+
+      <div>
+        <Label>Longitude</Label>
+        <Input type="number" step="0.00001" {...register("address.coordinates.lng")} />
+      </div>
+
+      <div>
+        <Label>IP Address</Label>
+        <Input {...register("ip")} />
+      </div>
+
+      <div>
+        <Label>MAC Address</Label>
+        <Input {...register("macAddress")} />
+      </div>
+
+      <div>
+        <Label>University</Label>
+        <Input {...register("university")} />
+      </div>
+
+      {/* Bank */}
+      <div>
+        <Label>Bank Card Expire</Label>
+        <Input {...register("bank.cardExpire")} />
+      </div>
+
+      <div>
+        <Label>Bank Card Number</Label>
+        <Input {...register("bank.cardNumber")} />
+      </div>
+
+      <div>
+        <Label>Bank Card Type</Label>
+        <Input {...register("bank.cardType")} />
+      </div>
+
+      <div>
+        <Label>Bank Currency</Label>
+        <Input {...register("bank.currency")} />
+      </div>
+
+      <div>
+        <Label>IBAN</Label>
+        <Input {...register("bank.iban")} />
+      </div>
+
+      {/* Company */}
+      <div>
+        <Label>Company Department</Label>
+        <Input {...register("company.department")} />
+      </div>
+
+      <div>
+        <Label>Company Name</Label>
+        <Input {...register("company.name")} />
+      </div>
+
+      <div>
+        <Label>Company Title</Label>
+        <Input {...register("company.title")} />
+      </div>
+
+      {/* Company Address */}
+      <div>
+        <Label>Company Address</Label>
+        <Input {...register("company.address.address")} />
+      </div>
+
+      <div>
+        <Label>Company City</Label>
+        <Input {...register("company.address.city")} />
+      </div>
+
+      <div>
+        <Label>Company State</Label>
+        <Input {...register("company.address.state")} />
+      </div>
+
+      <div>
+        <Label>Company State Code</Label>
+        <Input {...register("company.address.stateCode")} />
+      </div>
+
+      <div>
+        <Label>Company Postal Code</Label>
+        <Input {...register("company.address.postalCode")} />
+      </div>
+
+      <div>
+        <Label>Company Country</Label>
+        <Input {...register("company.address.country")} />
+      </div>
+
+      <div>
+        <Label>Company Latitude</Label>
+        <Input type="number" step="0.00001" {...register("company.address.coordinates.lat")} />
+      </div>
+
+      <div>
+        <Label>Company Longitude</Label>
+        <Input type="number" step="0.00001" {...register("company.address.coordinates.lng")} />
+      </div>
+
+      {/* Other Info */}
+      <div>
+        <Label>EIN</Label>
+        <Input {...register("ein")} />
+      </div>
+
+      <div>
+        <Label>SSN</Label>
+        <Input {...register("ssn")} />
+      </div>
+
+      <div>
+        <Label>User Agent</Label>
+        <Input {...register("userAgent")} />
+      </div>
+
+      {/* Crypto */}
+      <div>
+        <Label>Crypto Coin</Label>
+        <Input {...register("crypto.coin")} />
+      </div>
+
+      <div>
+        <Label>Crypto Wallet</Label>
+        <Input {...register("crypto.wallet")} />
+      </div>
+
+      <div>
+        <Label>Crypto Network</Label>
+        <Input {...register("crypto.network")} />
       </div>
 
       {/* Role */}
       <div>
-        <Label htmlFor="role">Role</Label>
-        <Input id="role" {...register("role")} placeholder="Role" />
+        <Label>Role</Label>
+        <Input {...register("role")} />
       </div>
 
-      {/* Submit Button */}
-      <Button type="submit" className="w-full">Submit</Button>
+      {/* Submit */}
+      <Button type="submit">Submit</Button>
     </form>
+    </div>
+    
   );
 }
