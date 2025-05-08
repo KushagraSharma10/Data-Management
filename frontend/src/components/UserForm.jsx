@@ -611,9 +611,9 @@ export default function UserForm() {
     }
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit =  async(data) => {
     console.log("Form Data:", data);
-    await axios.post("http://localhost:3000/create", data)
+    await axios.postForm("http://localhost:3000/create", data)
       .then((response) => {
         console.log("User created successfully:", response.data);
       })
@@ -622,9 +622,6 @@ export default function UserForm() {
       })
     
   };
-
-
-
 
  const inputs = [
   { label: "First Name", name: "firstName", type: "text" },
@@ -715,7 +712,6 @@ export default function UserForm() {
             </div>
           ))}
 
-          {/* Submit Button inside the form */}
           <div className="col-span-2 flex justify-center mt-6">
             <Button type="submit" className="w-full bg-blue-500  hover:bg-blue-600 text-white">Register</Button>
           </div>

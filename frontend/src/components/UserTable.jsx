@@ -273,8 +273,10 @@ export default function UserTable({ searchQuery }) {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
   const filteredRows = rows.filter((row) =>
-    row.profile.name.toLowerCase().includes(searchQuery.toLowerCase())
+    row.profile.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  
 
   const visibleRows = React.useMemo(
     () =>
