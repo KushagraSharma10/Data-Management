@@ -8,6 +8,7 @@ import { Link } from "react-router";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import axios from "axios";
 import { useState } from "react";
+import { set } from "date-fns";
 
 // 🔴 Removed image URL validation from schema
 const schema = yup.object().shape({
@@ -122,17 +123,15 @@ export default function UserForm() {
   const onSubmit = async (data) => {
     console.log("Submit button clicked, Form Data:", data);
     const formData = new FormData();
-    formData.append("image", image);
-
-    for (const key in data) {
-      const value = data[key];
-      if (typeof value === "object") {
-        formData.append(key, JSON.stringify(value));
-      } else {
-        formData.append(key, value);
-      }
+    
+    // Append the image file
+    if (image) {
+      formData.append("image", image);
     }
-
+  
+    // Stringify the entire data object and append as 'data'
+    formData.append("data", JSON.stringify(data));
+  
     try {
       const response = await axios.post(
         "http://localhost:3000/create",
@@ -143,9 +142,16 @@ export default function UserForm() {
       );
       console.log("User created successfully:", response.data);
     } catch (error) {
-      console.error("Error creating user:", error);
+      console.error("Error creating user:", error.response?.data || error.message);
     }
   };
+
+
+  const handleChange = (e) =>{
+    const file = e.target.files[0];
+  setImage(file);
+  console.log("Selected image:", file);
+  }
 
   const inputs = [
     { label: "First Name", name: "firstName", type: "text" },
@@ -234,7 +240,7 @@ export default function UserForm() {
             <Input
               type="file"
               accept="image/*"
-              onChange={(e) => setImage(e.target.files[0])}
+              onChange={handleChange}
               className="w-fit"
             />
           </div>
@@ -268,12 +274,12 @@ export default function UserForm() {
           ))}
 
           <div className="col-span-2 flex justify-center mt-6">
-            <Button
+            <button
               type="submit"
               className="w-full bg-blue-500 cursor-pointer hover:bg-blue-600 text-white"
             >
               Register
-            </Button>
+            </button>
           </div>
         </form>
       </div>
@@ -284,6 +290,7 @@ export default function UserForm() {
           Go Back
         </Link>
       </div>
+      
     </div>
   );
 }

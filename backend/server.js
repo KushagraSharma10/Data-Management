@@ -4,10 +4,11 @@ import cors from "@fastify/cors";
 const fastify = Fastify({ logger: true });
 import yup from 'yup'
 import multipart from '@fastify/multipart';
-import fs from 'fs';
+import fs from 'node:fs';
 import path from 'path';
-import util from 'util';
-
+import { pipeline } from 'node:stream/promises';
+import fastifyStatic from '@fastify/static';
+import { nanoid } from 'nanoid'
 
 
 const yupOptions = {
@@ -18,12 +19,23 @@ const yupOptions = {
 }
 
 
+
+await fastify.register(fastifyStatic, {
+  root: path.join(process.cwd(), 'uploads'),
+  prefix: '/uploads/',
+});
+
 await fastify.register(cors);
 await fastify.register(db);
-await fastify.register(multipart);
+await fastify.register(multipart, {attachFieldsToBody: true});
 
 const collection = fastify.mongo.db.collection("Users");
 
+
+const uploadDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const opt = {
   schema: {
@@ -38,7 +50,7 @@ const opt = {
       username: yup.string().required("Username is required"),
       password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
       birthDate: yup.string().required("Birth Date is required"),
-      image: yup.string().url("Invalid image URL").required("Image URL is required"),
+      image: yup.string(), 
       bloodGroup: yup.string().required("Blood Group is required"),
       height: yup.number().positive("Height must be positive").required("Height is required"),
       weight: yup.number().positive("Weight must be positive").required("Weight is required"),
@@ -137,171 +149,58 @@ fastify.get("/", async (request, reply) => {
   return reply.status(200).send(result);
 });
 
-// fastify.post("/create", opt, async (request, reply) => {
-//   const {
-//     firstName,
-//     lastName,
-//     maidenName,
-//     age,
-//     gender,
-//     email,
-//     phone,
-//     username,
-//     password,
-//     birthDate,
-//     image,
-//     bloodGroup,
-//     height,
-//     weight,
-//     eyeColor,
-//     hair: { color, type },
-//     domain,
-//     ip,
-//     macAddress,
-//     university,
-//     address: {
-//       address,
-//       city,
-//       state,
-//       postalCode,
-//       country,
-//       coordinates: { lat, lng }
-//     },
-//     bank: {
-//       cardExpire,
-//       cardNumber,
-//       cardType,
-//       currency,
-//       iban
-//     },
-//     company: {
-//       department,
-//       name,
-//       title,
-//       address: {
-//         address: companyAddress,
-//         city: companyCity,
-//         state: companyState,
-//         postalCode: companyPostalCode,
-//         coordinates: { lat: companyLat, lng: companyLng }
-//       }
-//     },
-//     ein,
-//     ssn,
-//     userAgent,
-//     crypto: {
-//       coin,
-//       wallet,
-//       network
-//     },
-//     role
-//   } = request.body;
-
-//   const newUser = await collection.insertOne({
-//     firstName,
-//     lastName,
-//     maidenName,
-//     age,
-//     gender,
-//     email,
-//     phone,
-//     username,
-//     password,
-//     birthDate,
-//     image,
-//     bloodGroup,
-//     height,
-//     weight,
-//     eyeColor,
-//     hair: { color, type },
-//     domain,
-//     ip,
-//     macAddress,
-//     university,
-//     address: {
-//       address,
-//       city,
-//       state,
-//       postalCode,
-//       country,
-//       coordinates: { lat, lng }
-//     },
-//     bank: {
-//       cardExpire,
-//       cardNumber,
-//       cardType,
-//       currency,
-//       iban
-//     },
-//     company: {
-//       department,
-//       name,
-//       title,
-//       address: {
-//         address: companyAddress,
-//         city: companyCity,
-//         state: companyState,
-//         postalCode: companyPostalCode,
-//         coordinates: { lat: companyLat, lng: companyLng }
-//       }
-//     },
-//     ein,
-//     ssn,
-//     userAgent,
-//     crypto: {
-//       coin,
-//       wallet,
-//       network
-//     },
-//     role
-//   });
-
-//   return reply.status(201).send(newUser);
-// });
-
 fastify.post("/create", async (request, reply) => {
-  console.log("Received data:", request.body); 
-  const parts = request.parts();
-  const fields = {};
-  let imageUrl = "";
+  const data = {};
+  let imageFilename = null;
 
+  const parts = request.parts();
   for await (const part of parts) {
     if (part.file) {
-      const filename = `${Date.now()}-${part.filename}`;
-      const filePath = path.join(uploadDir, filename);
-      await pump(part.file, fs.createWriteStream(filePath));
-      imageUrl = `/uploads/${filename}`;
-    } else {
-      fields[part.fieldname] = part.value;
+      // Handle file upload
+      imageFilename = `${Date.now()}-${part.filename}`;
+      const filePath = path.join(uploadDir, imageFilename);
+      await pipeline(part.file, fs.createWriteStream(filePath));
+    } else if (part.fieldname === 'data') {
+      // Parse the JSON data
+      try {
+        Object.assign(data, JSON.parse(part.value));
+      } catch (err) {
+        return reply.status(400).send({ error: "Invalid JSON data" });
+      }
     }
   }
 
-  let parsedData;
-  try {
-    parsedData = JSON.parse(fields.data); // 'data' field me pura JSON bhej frontend se
-  } catch (err) {
-    return reply.status(400).send({ error: "Invalid JSON" });
+  // Add image path to data if uploaded
+  if (!imageFilename) {
+    data.image = `/uploads/${imageFilename}`;
   }
 
-  parsedData.image = imageUrl; // ✅ add uploaded image URL
+  if (imageFilename) {
+    data.image = `http://localhost:3000/uploads/${imageFilename}`; // ✅ Full URL
+  }
 
-  // ✅ Use existing Yup validator from `opt`
   try {
-    const validated = opt.schema.body.validateSync(parsedData, {
+    const validated = opt.schema.body.validateSync(data, {
       strict: false,
       abortEarly: false,
       stripUnknown: true
     });
 
-
-
     const result = await collection.insertOne(validated);
-    console.log(fields);
     return reply.status(201).send(result);
   } catch (err) {
-    return reply.status(400).send({ errors: err.errors });
+    return reply.status(400).send({ errors: err.errors || err.message });
   }
 });
+
+
+fastify.post("/upload/file", async(req,reply)=>{
+  const file = await req.file();
+
+  const path = `${nanoid()}.${data.filename.split('.').pop()}`;
+  await pipeline(data.file, fs.createWriteStream(path))
+  reply.send({data:file ,status:200,message: "File uploaded successfully"})
+})
 
 
 fastify.get("/user/:userId", async (request, reply) => {
