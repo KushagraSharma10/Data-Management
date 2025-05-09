@@ -3,6 +3,12 @@ import db from "./db.js";
 import cors from "@fastify/cors";
 const fastify = Fastify({ logger: true });
 import yup from 'yup'
+import multipart from '@fastify/multipart';
+import fs from 'fs';
+import path from 'path';
+import util from 'util';
+
+
 
 const yupOptions = {
   strict: false,
@@ -14,6 +20,7 @@ const yupOptions = {
 
 await fastify.register(cors);
 await fastify.register(db);
+await fastify.register(multipart);
 
 const collection = fastify.mongo.db.collection("Users");
 
@@ -130,127 +137,172 @@ fastify.get("/", async (request, reply) => {
   return reply.status(200).send(result);
 });
 
-fastify.post("/create", opt, async (request, reply) => {
-  const {
-    firstName,
-    lastName,
-    maidenName,
-    age,
-    gender,
-    email,
-    phone,
-    username,
-    password,
-    birthDate,
-    image,
-    bloodGroup,
-    height,
-    weight,
-    eyeColor,
-    hair: { color, type },
-    domain,
-    ip,
-    macAddress,
-    university,
-    address: {
-      address,
-      city,
-      state,
-      postalCode,
-      country,
-      coordinates: { lat, lng }
-    },
-    bank: {
-      cardExpire,
-      cardNumber,
-      cardType,
-      currency,
-      iban
-    },
-    company: {
-      department,
-      name,
-      title,
-      address: {
-        address: companyAddress,
-        city: companyCity,
-        state: companyState,
-        postalCode: companyPostalCode,
-        coordinates: { lat: companyLat, lng: companyLng }
-      }
-    },
-    ein,
-    ssn,
-    userAgent,
-    crypto: {
-      coin,
-      wallet,
-      network
-    },
-    role
-  } = request.body;
+// fastify.post("/create", opt, async (request, reply) => {
+//   const {
+//     firstName,
+//     lastName,
+//     maidenName,
+//     age,
+//     gender,
+//     email,
+//     phone,
+//     username,
+//     password,
+//     birthDate,
+//     image,
+//     bloodGroup,
+//     height,
+//     weight,
+//     eyeColor,
+//     hair: { color, type },
+//     domain,
+//     ip,
+//     macAddress,
+//     university,
+//     address: {
+//       address,
+//       city,
+//       state,
+//       postalCode,
+//       country,
+//       coordinates: { lat, lng }
+//     },
+//     bank: {
+//       cardExpire,
+//       cardNumber,
+//       cardType,
+//       currency,
+//       iban
+//     },
+//     company: {
+//       department,
+//       name,
+//       title,
+//       address: {
+//         address: companyAddress,
+//         city: companyCity,
+//         state: companyState,
+//         postalCode: companyPostalCode,
+//         coordinates: { lat: companyLat, lng: companyLng }
+//       }
+//     },
+//     ein,
+//     ssn,
+//     userAgent,
+//     crypto: {
+//       coin,
+//       wallet,
+//       network
+//     },
+//     role
+//   } = request.body;
 
-  const newUser = await collection.insertOne({
-    firstName,
-    lastName,
-    maidenName,
-    age,
-    gender,
-    email,
-    phone,
-    username,
-    password,
-    birthDate,
-    image,
-    bloodGroup,
-    height,
-    weight,
-    eyeColor,
-    hair: { color, type },
-    domain,
-    ip,
-    macAddress,
-    university,
-    address: {
-      address,
-      city,
-      state,
-      postalCode,
-      country,
-      coordinates: { lat, lng }
-    },
-    bank: {
-      cardExpire,
-      cardNumber,
-      cardType,
-      currency,
-      iban
-    },
-    company: {
-      department,
-      name,
-      title,
-      address: {
-        address: companyAddress,
-        city: companyCity,
-        state: companyState,
-        postalCode: companyPostalCode,
-        coordinates: { lat: companyLat, lng: companyLng }
-      }
-    },
-    ein,
-    ssn,
-    userAgent,
-    crypto: {
-      coin,
-      wallet,
-      network
-    },
-    role
-  });
+//   const newUser = await collection.insertOne({
+//     firstName,
+//     lastName,
+//     maidenName,
+//     age,
+//     gender,
+//     email,
+//     phone,
+//     username,
+//     password,
+//     birthDate,
+//     image,
+//     bloodGroup,
+//     height,
+//     weight,
+//     eyeColor,
+//     hair: { color, type },
+//     domain,
+//     ip,
+//     macAddress,
+//     university,
+//     address: {
+//       address,
+//       city,
+//       state,
+//       postalCode,
+//       country,
+//       coordinates: { lat, lng }
+//     },
+//     bank: {
+//       cardExpire,
+//       cardNumber,
+//       cardType,
+//       currency,
+//       iban
+//     },
+//     company: {
+//       department,
+//       name,
+//       title,
+//       address: {
+//         address: companyAddress,
+//         city: companyCity,
+//         state: companyState,
+//         postalCode: companyPostalCode,
+//         coordinates: { lat: companyLat, lng: companyLng }
+//       }
+//     },
+//     ein,
+//     ssn,
+//     userAgent,
+//     crypto: {
+//       coin,
+//       wallet,
+//       network
+//     },
+//     role
+//   });
 
-  return reply.status(201).send(newUser);
+//   return reply.status(201).send(newUser);
+// });
+
+fastify.post("/create", async (request, reply) => {
+  console.log("Received data:", request.body); 
+  const parts = request.parts();
+  const fields = {};
+  let imageUrl = "";
+
+  for await (const part of parts) {
+    if (part.file) {
+      const filename = `${Date.now()}-${part.filename}`;
+      const filePath = path.join(uploadDir, filename);
+      await pump(part.file, fs.createWriteStream(filePath));
+      imageUrl = `/uploads/${filename}`;
+    } else {
+      fields[part.fieldname] = part.value;
+    }
+  }
+
+  let parsedData;
+  try {
+    parsedData = JSON.parse(fields.data); // 'data' field me pura JSON bhej frontend se
+  } catch (err) {
+    return reply.status(400).send({ error: "Invalid JSON" });
+  }
+
+  parsedData.image = imageUrl; // ✅ add uploaded image URL
+
+  // ✅ Use existing Yup validator from `opt`
+  try {
+    const validated = opt.schema.body.validateSync(parsedData, {
+      strict: false,
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+
+
+    const result = await collection.insertOne(validated);
+    console.log(fields);
+    return reply.status(201).send(result);
+  } catch (err) {
+    return reply.status(400).send({ errors: err.errors });
+  }
 });
+
 
 fastify.get("/user/:userId", async (request, reply) => {
   const { userId } = request.params;
