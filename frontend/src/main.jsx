@@ -11,6 +11,7 @@ import './index.css'
 import App from './App.jsx'
 import UserForm from "./components/UserForm.jsx";
 import BlogTable from "./components/BlogTable";
+import BlogForm from "./components/BlogForm";
 
 
 let router = createBrowserRouter([
@@ -29,6 +30,10 @@ let router = createBrowserRouter([
   {
     path: "/blogs",
     element: <BlogTable />
+  },
+  {
+    path: "/blogs/create",
+    element: <BlogForm   />
   }
 ]);
 
