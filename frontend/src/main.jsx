@@ -10,6 +10,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import UserForm from "./components/UserForm.jsx";
+import BlogTable from "./components/BlogTable";
 
 
 let router = createBrowserRouter([
@@ -25,6 +26,10 @@ let router = createBrowserRouter([
     path: "/user/:userId",
     element: <UserForm />
   },
+  {
+    path: "/blogs",
+    element: <BlogTable />
+  }
 ]);
 
 createRoot(document.getElementById('root')).render(
