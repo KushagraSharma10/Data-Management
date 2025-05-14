@@ -48,13 +48,29 @@ const headCells = [
 ];
 
 function BlogTableHead(props) {
-  const { order, orderBy, onRequestSort } = props;
+  const {
+    order,
+    orderBy,
+    onRequestSort,
+    numSelected,
+    rowCount,
+    onSelectAllClick,
+  } = props;
+
   const createSortHandler = (property) => (event) =>
     onRequestSort(event, property);
 
   return (
     <TableHead>
       <TableRow>
+        <TableCell padding="checkbox">
+          <Checkbox
+            indeterminate={numSelected > 0 && numSelected < rowCount}
+            checked={rowCount > 0 && numSelected === rowCount}
+            onChange={onSelectAllClick}
+            inputProps={{ "aria-label": "select all blogs" }}
+          />
+        </TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -66,11 +82,11 @@ function BlogTableHead(props) {
               onClick={createSortHandler(headCell.id)}
             >
               {headCell.label}
-              {orderBy === headCell.id ? (
+              {orderBy === headCell.id && (
                 <Box component="span" sx={visuallyHidden}>
                   {order === "desc" ? "sorted descending" : "sorted ascending"}
                 </Box>
-              ) : null}
+              )}
             </TableSortLabel>
           </TableCell>
         ))}
@@ -83,6 +99,9 @@ BlogTableHead.propTypes = {
   onRequestSort: PropTypes.func.isRequired,
   order: PropTypes.oneOf(["asc", "desc"]).isRequired,
   orderBy: PropTypes.string.isRequired,
+  numSelected: PropTypes.number.isRequired,
+  rowCount: PropTypes.number.isRequired,
+  onSelectAllClick: PropTypes.func.isRequired,
 };
 
 function BlogTableToolbar({ selected }) {
@@ -93,7 +112,10 @@ function BlogTableToolbar({ selected }) {
         pr: { xs: 1, sm: 1 },
         ...(selected.length > 0 && {
           bgcolor: (theme) =>
-            alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
+            alpha(
+              theme.palette.primary.main,
+              theme.palette.action.activatedOpacity
+            ),
         }),
       }}
     >
@@ -121,7 +143,38 @@ export default function BlogTable({ searchQuery = "" }) {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [blogs, setBlogs] = React.useState([]);
 
- useEffect(() => {
+  const isSelected = (id) => selected.indexOf(id) !== -1;
+
+  const handleSelectAllClick = (event) => {
+    if (event.target.checked) {
+      const newSelected = visibleRows.map((n) => n.id);
+      setSelected(newSelected);
+      return;
+    }
+    setSelected([]);
+  };
+
+  const handleClick = (id) => {
+    const selectedIndex = selected.indexOf(id);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = [...selected, id];
+    } else if (selectedIndex === 0) {
+      newSelected = selected.slice(1);
+    } else if (selectedIndex === selected.length - 1) {
+      newSelected = selected.slice(0, -1);
+    } else if (selectedIndex > 0) {
+      newSelected = [
+        ...selected.slice(0, selectedIndex),
+        ...selected.slice(selectedIndex + 1),
+      ];
+    }
+
+    setSelected(newSelected);
+  };
+
+  useEffect(() => {
     const fetchBlogs = async () => {
       try {
         const res = await axios.get("http://localhost:3000/blogs");
@@ -168,7 +221,7 @@ export default function BlogTable({ searchQuery = "" }) {
   );
 
   return (
-    <Box className = "p-10 border-1  rounded-xl" sx={{ width: "100%" }}>
+    <Box className="p-10 border-1  rounded-xl" sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <BlogTableToolbar selected={selected} />
         <TableContainer>
@@ -177,10 +230,25 @@ export default function BlogTable({ searchQuery = "" }) {
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
+              numSelected={selected.length}
+              rowCount={visibleRows.length}
+              onSelectAllClick={handleSelectAllClick}
             />
             <TableBody>
               {visibleRows.map((row) => (
-                <TableRow hover key={row.id}>
+                <TableRow
+                  hover
+                  key={row.id}
+                  role="checkbox"
+                  aria-checked={isSelected(row.id)}
+                  selected={isSelected(row.id)}
+                >
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={isSelected(row.id)}
+                      onChange={() => handleClick(row.id)}
+                    />
+                  </TableCell>
                   <TableCell>{row.sno}</TableCell>
                   <TableCell>{row.title}</TableCell>
                   <TableCell>{row.description}</TableCell>
@@ -195,7 +263,11 @@ export default function BlogTable({ searchQuery = "" }) {
                         </Button>
                       </Link>
                       <Link to={`/blogs/edit/${row.id}`}>
-                        <Button variant="contained" size="small" color="primary">
+                        <Button
+                          variant="contained"
+                          size="small"
+                          color="primary"
+                        >
                           Update
                         </Button>
                       </Link>
