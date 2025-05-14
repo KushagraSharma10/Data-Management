@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import { ArrowBack, PhotoCamera, Send } from "@mui/icons-material";
+import { Link } from "react-router";
 
 export default function BlogForm() {
   const {
@@ -50,7 +52,7 @@ export default function BlogForm() {
     });
     alert("Blog submitted successfully!");
     reset();         // Clear form fields
-    
+
     setPreview(null); // Clear image preview
   } catch (err) {
     console.error("Submission failed:", err);
@@ -70,18 +72,86 @@ const handleImageChange = (e) => {
 
 
   return (
-    <Paper sx={{ p: 4, maxWidth: 600, mx: "auto", mt: 5, borderRadius: "1vw", border:"none" , boxShadow:"" }}>
-      <Typography variant="h5" mb={4} fontWeight={500} textAlign={"center"} >
-        Create Blog
+    <Paper sx={{ 
+      p: 6, 
+      maxWidth: 800,
+      mx: "auto",
+      mt: 8,
+      borderRadius: 4,
+      boxShadow: '0px 15px 35px rgba(0,0,0,0.1)',
+      background: 'linear-gradient(to bottom right, #f9fafb 0%, #f3f4f6 100%)',
+      position: 'relative'  // Added for absolute positioning context
+    }}>
+      {/* Back Button */}
+      <Box sx={{ 
+        position: 'absolute',
+        top: 16,
+        left: 16,
+        zIndex: 1
+      }}>
+        <Button
+          component={Link}
+          to="/blogs"
+          startIcon={<ArrowBack />}
+          sx={{
+            textTransform: 'none',
+            color: 'text.secondary',
+            '&:hover': {
+              color: 'primary.main',
+              bgcolor: 'rgba(63,81,181,0.08)'
+            },
+            transition: 'all 0.2s ease',
+            borderRadius: 2,
+            px: 2,
+            py: 1
+          }}
+        >
+          Back to Blogs
+        </Button>
+      </Box>
+
+      <Typography 
+        variant="h4" 
+        mb={5} 
+        fontWeight={600} 
+        textAlign="center"
+        sx={{
+          color: 'text.primary',
+          letterSpacing: 1,
+          '&:after': {
+            content: '""',
+            display: 'block',
+            width: '60px',
+            height: '4px',
+            background: '#3f51b5',
+            margin: '16px auto 0',
+            borderRadius: 2
+          }
+        }}
+      >
+        Create New Blog
       </Typography>
       <Box
         component="form"
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        sx={{ display: "flex", flexDirection: "column", gap: 3 }}
       >
-        <Button variant="outlined" component="label">
-          Upload Image
+        <Button 
+          variant="contained"
+          component="label"
+          startIcon={<PhotoCamera />}
+          sx={{
+            py: 1.5,
+            bgcolor: 'primary.main',
+            '&:hover': { bgcolor: 'primary.dark' },
+            fontSize: 16,
+            textTransform: 'none',
+            borderRadius: 2,
+            boxShadow: 2,
+          }}
+        >
+          Upload Featured Image
           <input
             type="file"
             accept="image/*"
@@ -89,54 +159,124 @@ const handleImageChange = (e) => {
             onChange={handleImageChange}
           />
         </Button>
+        
         {preview && (
-          <img
-            src={preview}
-            alt="Preview"
-            style={{
-              width: 100,
-              height: 100,
-              objectFit: "cover",
-              borderRadius: 8,
-            }}
-          />
+          <div className="w-full flex items-center justify-center">
+            <Box sx={{ 
+            position: 'relative', 
+            width: '15vw', 
+            height: '15vw',
+            borderRadius: '100%',
+            overflow: 'hidden',
+            boxShadow: 3,
+            mt: 1,
+            mb: 2
+          }}>
+            <img
+              src={preview}
+              alt="Preview"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          </Box>
+          </div>
         )}
 
         <TextField
-          label="Title"
+          label="Blog Title"
+          variant="outlined"
+          fullWidth
           {...register("title", { required: "Title is required" })}
           error={!!errors.title}
           helperText={errors.title?.message}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              '&.Mui-focused fieldset': {
+                borderColor: 'primary.main',
+              },
+            }
+          }}
+          InputProps={{
+            style: { fontSize: 18 }
+          }}
         />
 
         <TextField
-          label="Description"
+          label="Blog Content"
           multiline
-          rows={4}
-          {...register("description", {
-            required: "Description is required",
-          })}
+          rows={6}
+          variant="outlined"
+          {...register("description", { required: "Description is required" })}
           error={!!errors.description}
           helperText={errors.description?.message}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              '& textarea': { fontSize: 16 }
+            }
+          }}
         />
 
         <TextField
           select
-          label="Author"
+          label="Select Author"
           defaultValue=""
+          variant="outlined"
           {...register("author", { required: "Author is required" })}
           error={!!errors.author}
           helperText={errors.author?.message}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              '&.Mui-focused fieldset': {
+                borderColor: 'primary.main',
+              },
+            }
+          }}
+          InputProps={{
+            style: { fontSize: 16 }
+          }}
         >
           {users.map((user) => (
-            <MenuItem key={user._id} value={user.fullName}>
+            <MenuItem 
+              key={user._id} 
+              value={user.fullName}
+              sx={{
+                fontSize: 15,
+                '&:hover': { bgcolor: 'primary.light' },
+                '&.Mui-selected': { bgcolor: 'primary.main', color: 'white' }
+              }}
+            >
               {user.fullName}
             </MenuItem>
           ))}
         </TextField>
 
-        <Button variant="contained" type="submit">
-          Submit Blog
+        <Button 
+          variant="contained"
+          type="submit"
+          endIcon={<Send/>}
+          sx={{
+            mt: 3,
+            py: 1.5,
+            fontSize: 17,
+            fontWeight: 600,
+            textTransform: 'none',
+            borderRadius: 2,
+            bgcolor: 'success.main',
+            '&:hover': { 
+              bgcolor: 'success.dark',
+              transform: 'translateY(-2px)',
+              boxShadow: 3
+            },
+            transition: 'all 0.2s ease',
+          }}
+        >
+          Publish Blog
         </Button>
       </Box>
     </Paper>
