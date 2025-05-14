@@ -264,6 +264,84 @@ fastify.post("/blogs", async (request, reply) => {
   }
 });
 
+// ⬇️ Get Blog by ID
+fastify.get("/blogs/:blogId", async (request, reply) => {
+  const { blogId } = request.params;
+
+  try {
+    const blog = await blogCollection.findOne({
+      _id: new fastify.mongo.ObjectId(blogId),
+    });
+
+    if (!blog) {
+      return reply.status(404).send({ message: "Blog not found" });
+    }
+
+    return reply.status(200).send(blog);
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
+
+
+// ⬇️ Update Blog
+fastify.put("/blogs/:blogId", async (request, reply) => {
+  const { blogId } = request.params;
+  const updatedData = {};
+  let imageFilename = null;
+
+  const parts = request.parts();
+  for await (const part of parts) {
+    if (part.file) {
+      imageFilename = `${Date.now()}-${part.filename}`;
+      const filePath = path.join(uploadDir, imageFilename);
+      await pipeline(part.file, fs.createWriteStream(filePath));
+    } else {
+      updatedData[part.fieldname] = part.value;
+    }
+  }
+
+  if (imageFilename) {
+    updatedData.image = `http://localhost:3000/uploads/${imageFilename}`;
+  }
+
+  try {
+    const result = await blogCollection.updateOne(
+      { _id: new fastify.mongo.ObjectId(blogId) },
+      { $set: updatedData }
+    );
+
+    if (result.matchedCount === 0) {
+      return reply.status(404).send({ message: "Blog not found" });
+    }
+
+    return reply.status(200).send({ message: "Blog updated successfully" });
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
+
+
+// ⬇️ Delete Blog
+fastify.delete("/blogs/:blogId", async (request, reply) => {
+  const { blogId } = request.params;
+
+  try {
+    const result = await blogCollection.deleteOne({
+      _id: new fastify.mongo.ObjectId(blogId),
+    });
+
+    if (result.deletedCount === 0) {
+      return reply.status(404).send({ message: "Blog not found" });
+    }
+
+    return reply.status(200).send({ message: "Blog deleted successfully" });
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
+
+
 
 
 fastify.listen({ port: 3000 }, (err, address) => {

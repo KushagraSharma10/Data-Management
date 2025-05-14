@@ -10,9 +10,10 @@ import {
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { ArrowBack, PhotoCamera, Send } from "@mui/icons-material";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 
-export default function BlogForm() {
+export default function BlogForm({ mode = "create" }) {
+  const { blogId } = useParams();
   const {
     register,
     handleSubmit,
@@ -23,165 +24,178 @@ export default function BlogForm() {
 
   const [users, setUsers] = useState([]);
   const [preview, setPreview] = useState(null);
+  const isReadOnly = mode === "view";
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/")
-      .then((res) => setUsers(res.data))
-      .catch((err) => console.error("Failed to fetch users:", err));
+    axios.get("http://localhost:3000/").then((res) => setUsers(res.data));
   }, []);
 
+  useEffect(() => {
+    if ((mode === "edit" || mode === "view") && blogId) {
+      axios.get(`http://localhost:3000/blogs/${blogId}`).then((res) => {
+        const { title, description, author, image } = res.data;
+        setValue("title", title);
+        setValue("description", description);
+        setValue("author", author);
+        setPreview(`http://localhost:3000/uploads/${image}`); // assuming file path
+      });
+    }
+  }, [mode, blogId, setValue]);
+
   const onSubmit = async (data) => {
-  const formData = new FormData();
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("author", data.author);
+    formData.append("description", data.description);
+    if (data.image && data.image[0]) formData.append("image", data.image[0]);
 
-  // Append all form fields except the image
-  formData.append("title", data.title);
-  formData.append("author", data.author);
-  formData.append("description", data.description);
-
-  // Append image only if selected
-  if (data.image && data.image[0]) {
-    formData.append("image", data.image[0]);
-  }
-
-  try {
-    await axios.post("http://localhost:3000/blogs", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data"
+    try {
+      if (mode === "edit") {
+        await axios.put(`http://localhost:3000/blogs/${blogId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        alert("Blog updated successfully!");
+      } else {
+        await axios.post("http://localhost:3000/blogs", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        alert("Blog created successfully!");
       }
-    });
-    alert("Blog submitted successfully!");
-    reset();         // Clear form fields
+      reset();
+      setPreview(null);
+    } catch (err) {
+      console.error("Submission failed:", err);
+    }
+  };
 
-    setPreview(null); // Clear image preview
-  } catch (err) {
-    console.error("Submission failed:", err);
-  }
-
-  console.log("Form Data:", data); // Debug original form data
-};
-
-
-const handleImageChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    setValue("image", [file]); // ✅ Wrap in array
-    setPreview(URL.createObjectURL(file));
-  }
-};
-
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setValue("image", [file]);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   return (
-    <Paper sx={{ 
-      p: 6, 
-      maxWidth: 800,
-      mx: "auto",
-      mt: 8,
-      borderRadius: 4,
-      boxShadow: '0px 15px 35px rgba(0,0,0,0.1)',
-      background: 'linear-gradient(to bottom right, #f9fafb 0%, #f3f4f6 100%)',
-      position: 'relative'  // Added for absolute positioning context
-    }}>
+    <Paper
+      sx={{
+        p: 6,
+        maxWidth: 800,
+        mx: "auto",
+        mt: 8,
+        borderRadius: 4,
+        boxShadow: "0px 15px 35px rgba(0,0,0,0.1)",
+        background:
+          "linear-gradient(to bottom right, #f9fafb 0%, #f3f4f6 100%)",
+        position: "relative", // Added for absolute positioning context
+      }}
+    >
       {/* Back Button */}
-      <Box sx={{ 
-        position: 'absolute',
-        top: 16,
-        left: 16,
-        zIndex: 1
-      }}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: 16,
+          left: 16,
+          zIndex: 1,
+        }}
+      >
         <Button
           component={Link}
           to="/blogs"
           startIcon={<ArrowBack />}
           sx={{
-            textTransform: 'none',
-            color: 'text.secondary',
-            '&:hover': {
-              color: 'primary.main',
-              bgcolor: 'rgba(63,81,181,0.08)'
+            textTransform: "none",
+            color: "text.secondary",
+            "&:hover": {
+              color: "primary.main",
+              bgcolor: "rgba(63,81,181,0.08)",
             },
-            transition: 'all 0.2s ease',
+            transition: "all 0.2s ease",
             borderRadius: 2,
             px: 2,
-            py: 1
+            py: 1,
           }}
         >
           Back to Blogs
         </Button>
       </Box>
 
-      <Typography 
-        variant="h4" 
-        mb={5} 
-        fontWeight={600} 
+      <Typography
+        variant="h4"
+        mb={5}
+        fontWeight={600}
         textAlign="center"
         sx={{
-          color: 'text.primary',
+          color: "text.primary",
           letterSpacing: 1,
-          '&:after': {
+          "&:after": {
             content: '""',
-            display: 'block',
-            width: '60px',
-            height: '4px',
-            background: '#3f51b5',
-            margin: '16px auto 0',
-            borderRadius: 2
-          }
+            display: "block",
+            width: "60px",
+            height: "4px",
+            background: "#3f51b5",
+            margin: "16px auto 0",
+            borderRadius: 2,
+          },
         }}
       >
-        Create New Blog
+        {mode === "edit" ? "Edit Blog" : mode === "view" ? "View Blog" : "Create New Blog"}
       </Typography>
       <Box
         component="form"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={!isReadOnly ? handleSubmit(onSubmit) : undefined}
         noValidate
         sx={{ display: "flex", flexDirection: "column", gap: 3 }}
       >
-        <Button 
-          variant="contained"
-          component="label"
-          startIcon={<PhotoCamera />}
-          sx={{
-            py: 1.5,
-            bgcolor: 'primary.main',
-            '&:hover': { bgcolor: 'primary.dark' },
-            fontSize: 16,
-            textTransform: 'none',
-            borderRadius: 2,
-            boxShadow: 2,
-          }}
-        >
-          Upload Featured Image
-          <input
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleImageChange}
-          />
-        </Button>
-        
+        {!isReadOnly && (
+          <Button
+            variant="contained"
+            component="label"
+            startIcon={<PhotoCamera />}
+            sx={{
+              py: 1.5,
+              bgcolor: "primary.main",
+              "&:hover": { bgcolor: "primary.dark" },
+              fontSize: 16,
+              textTransform: "none",
+              borderRadius: 2,
+              boxShadow: 2,
+            }}
+          >
+            Upload Featured Image
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleImageChange}
+            />
+          </Button>
+        )}
+
         {preview && (
           <div className="w-full flex items-center justify-center">
-            <Box sx={{ 
-            position: 'relative', 
-            width: '15vw', 
-            height: '15vw',
-            borderRadius: '100%',
-            overflow: 'hidden',
-            boxShadow: 3,
-            mt: 1,
-            mb: 2
-          }}>
-            <img
-              src={preview}
-              alt="Preview"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
+            <Box
+              sx={{
+                position: "relative",
+                width: "15vw",
+                height: "15vw",
+                borderRadius: "100%",
+                overflow: "hidden",
+                boxShadow: 3,
+                mt: 1,
+                mb: 2,
               }}
-            />
-          </Box>
+            >
+              <img
+                src={preview}
+                alt="Preview"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            </Box>
           </div>
         )}
 
@@ -192,16 +206,17 @@ const handleImageChange = (e) => {
           {...register("title", { required: "Title is required" })}
           error={!!errors.title}
           helperText={errors.title?.message}
+          disabled={isReadOnly}
           sx={{
-            '& .MuiOutlinedInput-root': {
+            "& .MuiOutlinedInput-root": {
               borderRadius: 2,
-              '&.Mui-focused fieldset': {
-                borderColor: 'primary.main',
+              "&.Mui-focused fieldset": {
+                borderColor: "primary.main",
               },
-            }
+            },
           }}
           InputProps={{
-            style: { fontSize: 18 }
+            style: { fontSize: 18 },
           }}
         />
 
@@ -213,11 +228,12 @@ const handleImageChange = (e) => {
           {...register("description", { required: "Description is required" })}
           error={!!errors.description}
           helperText={errors.description?.message}
+          disabled={isReadOnly}
           sx={{
-            '& .MuiOutlinedInput-root': {
+            "& .MuiOutlinedInput-root": {
               borderRadius: 2,
-              '& textarea': { fontSize: 16 }
-            }
+              "& textarea": { fontSize: 16 },
+            },
           }}
         />
 
@@ -229,26 +245,27 @@ const handleImageChange = (e) => {
           {...register("author", { required: "Author is required" })}
           error={!!errors.author}
           helperText={errors.author?.message}
+          disabled={isReadOnly}
           sx={{
-            '& .MuiOutlinedInput-root': {
+            "& .MuiOutlinedInput-root": {
               borderRadius: 2,
-              '&.Mui-focused fieldset': {
-                borderColor: 'primary.main',
+              "&.Mui-focused fieldset": {
+                borderColor: "primary.main",
               },
-            }
+            },
           }}
           InputProps={{
-            style: { fontSize: 16 }
+            style: { fontSize: 16 },
           }}
         >
           {users.map((user) => (
-            <MenuItem 
-              key={user._id} 
+            <MenuItem
+              key={user._id}
               value={user.fullName}
               sx={{
                 fontSize: 15,
-                '&:hover': { bgcolor: 'primary.light' },
-                '&.Mui-selected': { bgcolor: 'primary.main', color: 'white' }
+                "&:hover": { bgcolor: "primary.light" },
+                "&.Mui-selected": { bgcolor: "primary.main", color: "white" },
               }}
             >
               {user.fullName}
@@ -256,28 +273,30 @@ const handleImageChange = (e) => {
           ))}
         </TextField>
 
-        <Button 
-          variant="contained"
-          type="submit"
-          endIcon={<Send/>}
-          sx={{
-            mt: 3,
-            py: 1.5,
-            fontSize: 17,
-            fontWeight: 600,
-            textTransform: 'none',
-            borderRadius: 2,
-            bgcolor: 'success.main',
-            '&:hover': { 
-              bgcolor: 'success.dark',
-              transform: 'translateY(-2px)',
-              boxShadow: 3
-            },
-            transition: 'all 0.2s ease',
-          }}
-        >
-          Publish Blog
-        </Button>
+        {isReadOnly && (
+          <Button
+            variant="contained"
+            type="submit"
+            endIcon={<Send />}
+            sx={{
+              mt: 3,
+              py: 1.5,
+              fontSize: 17,
+              fontWeight: 600,
+              textTransform: "none",
+              borderRadius: 2,
+              bgcolor: "success.main",
+              "&:hover": {
+                bgcolor: "success.dark",
+                transform: "translateY(-2px)",
+                boxShadow: 3,
+              },
+              transition: "all 0.2s ease",
+            }}
+          >
+            Publish Blog
+          </Button>
+        )}
       </Box>
     </Paper>
   );
