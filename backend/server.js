@@ -27,9 +27,18 @@ await fastify.register(fastifyStatic, {
 
 await fastify.register(cors);
 await fastify.register(db);
-await fastify.register(multipart, {attachFieldsToBody: true});
+await fastify.register(multipart,{
+  attachFieldsToBody: false,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB
+  },
+
+
+});
 
 const collection = fastify.mongo.db.collection("Users");
+const blogCollection = fastify.mongo.db.collection("Blogs");
+
 
 
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -214,6 +223,49 @@ fastify.get("/user/:userId", async (request, reply) => {
   return reply.status(200).send(user);
 });
 
+fastify.get("/blogs", async (request, reply) => {
+  try {
+    const blogs = await blogCollection.find().toArray();
+    return reply.status(200).send(blogs);
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
+
+
+fastify.post("/blogs", async (request, reply) => {
+  const blog = {};
+  let imageFilename = null;
+
+  const parts = request.parts();
+  for await (const part of parts) {
+    if (part.file) {
+      imageFilename = `${Date.now()}-${part.filename}`;
+      const filePath = path.join(uploadDir, imageFilename);
+      console.log("Saving file to:", filePath);
+      await pipeline(part.file, fs.createWriteStream(filePath));
+    } else {
+      // Field data (title, author, description etc)
+      console.log(`${part.fieldname}: ${part.value}`); // ✅ DEBUG
+      blog[part.fieldname] = part.value;
+    }
+  }
+
+  if (imageFilename) {
+    blog.image = `http://localhost:3000/uploads/${imageFilename}`;
+  }
+
+  try {
+    const result = await blogCollection.insertOne(blog);
+    blog._id = result.insertedId; // ✅ manually add inserted ID
+    return reply.status(201).send({ data: blog, message: "Blog created", result });
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
+
+
+
 fastify.listen({ port: 3000 }, (err, address) => {
   if (err) {
     fastify.log.error(err);
@@ -221,3 +273,4 @@ fastify.listen({ port: 3000 }, (err, address) => {
   }
   fastify.log.info(`Server listening at ${address}`);
 });
+

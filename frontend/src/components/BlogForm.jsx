@@ -7,97 +7,124 @@ import {
   MenuItem,
   Paper,
 } from "@mui/material";
+import { useForm } from "react-hook-form";
 import axios from "axios";
 
 export default function BlogForm() {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    author: "",
-    image: null,
-  });
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm();
+
   const [users, setUsers] = useState([]);
+  const [preview, setPreview] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/") // your user API
+    axios
+      .get("http://localhost:3000/")
       .then((res) => setUsers(res.data))
-      .catch((err) => console.error("User fetch failed:", err));
+      .catch((err) => console.error("Failed to fetch users:", err));
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: files ? files[0] : value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const data = new FormData();
-    Object.entries(formData).forEach(([key, value]) =>
-      data.append(key, value)
-    );
-
+  const onSubmit = async (data) => {
+    const formData = new FormData();
+  
+    // Append all form fields except the image
+    formData.append("title", data.title);
+    formData.append("author", data.author);
+    formData.append("description", data.description);
+  
+    // Append image only if selected
+    if (data.image && data.image[0]) {
+      formData.append("image", data.image[0]);
+    }
+  
     try {
-      await axios.post("http://localhost:3000/blogs", data); // Adjust your blog API
+      await axios.post("http://localhost:3000/blogs", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
       alert("Blog submitted successfully!");
-    } catch (error) {
-      console.error("Submission failed:", error);
+      reset();         // Clear form fields
+      setPreview(null); // Clear image preview
+    } catch (err) {
+      console.error("Submission failed:", err);
+    }
+  
+    console.log("Form Data:", data); // Debug original form data
+  };
+  
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setValue("image", file); // Register file input manually
+      setPreview(URL.createObjectURL(file));
     }
   };
 
   return (
-    <Paper sx={{ p: 4, maxWidth: 600, mx: "auto", mt: 4, borderRadius: "1vw" }}>
-      <Typography variant="h5" gutterBottom>
+    <Paper sx={{ p: 4, maxWidth: 600, mx: "auto", mt: 5, borderRadius: "1vw", border:"none" , boxShadow:"" }}>
+      <Typography variant="h5" mb={4} fontWeight={500} textAlign={"center"} >
         Create Blog
       </Typography>
-      <Box component="form" onSubmit={handleSubmit} noValidate>
-      <Button variant="outlined" component="label" fullWidth sx={{ mt: 2 }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+      >
+        <Button variant="outlined" component="label">
           Upload Image
-
           <input
             type="file"
-            name="image"
-            hidden
             accept="image/*"
-            onChange={handleChange}
+            hidden
+            onChange={handleImageChange}
           />
-            {formData.image && (
-                <img
-                src={URL.createObjectURL(formData.image)}
-                alt="Preview"
-                style={{ width: "100px", height: "100px", marginLeft: "10px" }}
-                />
-
-            )}
         </Button>
+        {preview && (
+          <img
+            src={preview}
+            alt="Preview"
+            style={{
+              width: 100,
+              height: 100,
+              objectFit: "cover",
+              borderRadius: 8,
+            }}
+          />
+        )}
+
         <TextField
-          fullWidth
           label="Title"
-          name="title"
-          margin="normal"
-          value={formData.title}
-          onChange={handleChange}
+          {...register("title", { required: "Title is required" })}
+          error={!!errors.title}
+          helperText={errors.title?.message}
         />
+
         <TextField
-          fullWidth
+          label="Description"
           multiline
           rows={4}
-          label="Description"
-          name="description"
-          margin="normal"
-          value={formData.description}
-          onChange={handleChange}
+          {...register("description", {
+            required: "Description is required",
+          })}
+          error={!!errors.description}
+          helperText={errors.description?.message}
         />
+
         <TextField
-          fullWidth
           select
           label="Author"
-          name="author"
-          value={formData.author}
-          onChange={handleChange}
-          margin="normal"
+          defaultValue=""
+          {...register("author", { required: "Author is required" })}
+          error={!!errors.author}
+          helperText={errors.author?.message}
         >
           {users.map((user) => (
             <MenuItem key={user._id} value={user.fullName}>
@@ -105,12 +132,11 @@ export default function BlogForm() {
             </MenuItem>
           ))}
         </TextField>
-      
-        <Button type="submit" variant="contained" fullWidth sx={{ mt: 3 }}>
-          Submit
+
+        <Button variant="contained" type="submit">
+          Submit Blog
         </Button>
       </Box>
     </Paper>
   );
 }
-
