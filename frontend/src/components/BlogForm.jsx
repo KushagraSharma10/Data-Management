@@ -30,42 +30,44 @@ export default function BlogForm() {
   }, []);
 
   const onSubmit = async (data) => {
-    const formData = new FormData();
-  
-    // Append all form fields except the image
-    formData.append("title", data.title);
-    formData.append("author", data.author);
-    formData.append("description", data.description);
-  
-    // Append image only if selected
-    if (data.image && data.image[0]) {
-      formData.append("image", data.image[0]);
-    }
-  
-    try {
-      await axios.post("http://localhost:3000/blogs", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
-      });
-      alert("Blog submitted successfully!");
-      reset();         // Clear form fields
-      setPreview(null); // Clear image preview
-    } catch (err) {
-      console.error("Submission failed:", err);
-    }
-  
-    console.log("Form Data:", data); // Debug original form data
-  };
-  
+  const formData = new FormData();
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setValue("image", file); // Register file input manually
-      setPreview(URL.createObjectURL(file));
-    }
-  };
+  // Append all form fields except the image
+  formData.append("title", data.title);
+  formData.append("author", data.author);
+  formData.append("description", data.description);
+
+  // Append image only if selected
+  if (data.image && data.image[0]) {
+    formData.append("image", data.image[0]);
+  }
+
+  try {
+    await axios.post("http://localhost:3000/blogs", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    });
+    alert("Blog submitted successfully!");
+    reset();         // Clear form fields
+    
+    setPreview(null); // Clear image preview
+  } catch (err) {
+    console.error("Submission failed:", err);
+  }
+
+  console.log("Form Data:", data); // Debug original form data
+};
+
+
+const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setValue("image", [file]); // ✅ Wrap in array
+    setPreview(URL.createObjectURL(file));
+  }
+};
+
 
   return (
     <Paper sx={{ p: 4, maxWidth: 600, mx: "auto", mt: 5, borderRadius: "1vw", border:"none" , boxShadow:"" }}>
