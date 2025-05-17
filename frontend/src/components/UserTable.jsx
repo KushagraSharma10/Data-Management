@@ -212,19 +212,29 @@ export default function UserTable({ searchQuery }) {
     fetchUsers();
   }, []);
 
+  const formatDate = (isoDate) => {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+  
+  
   const rows = users.map((user) => ({
     id: user._id,
     profile: {
       avatar:
         user.image ||
         "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg",
-      name: user.firstname,
+      name: user.firstName + " " + (user.lastName || ""),
       email: user.email,
     },
     phone: user.phone,
-    gender: user.gender.charAt(0).toUpperCase(),
-    personalDetails: `DOB: ${user.birthDate}\nAge: ${user.age}\nAddress: ${user.address}, ${user.city}`,
-    edu: user.university,
+    gender:user.gender,
+    personalDetails: `DOB: ${formatDate(user.birthDate)}\nAge: ${user.age}\nAddress:\n${user.address.address}, ${user.address.city}`,
+    edu: `University: ${user.university}`,
   }));
 
   const handleRequestSort = (event, property) => {
