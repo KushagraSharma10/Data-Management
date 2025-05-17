@@ -273,7 +273,7 @@ export default function BlogForm({ mode = "create" }) {
           ))}
         </TextField>
 
-        {isReadOnly && (
+        {!isReadOnly && (
           <Button
             variant="contained"
             type="submit"

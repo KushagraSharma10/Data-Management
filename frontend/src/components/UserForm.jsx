@@ -4,10 +4,10 @@ import * as yup from "yup";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { set } from "date-fns";
 
 // 🔴 Removed image URL validation from schema
@@ -39,7 +39,7 @@ const schema = yup.object().shape({
     city: yup.string().required("City is required"),
     state: yup.string().required("State is required"),
     postalCode: yup.string().required("Postal Code is required"),
-    country: yup.string().required("Country is required"),
+    // country: yup.string().required("Country is required"),
     coordinates: yup.object().shape({
       lat: yup.number().required("Latitude is required"),
       lng: yup.number().required("Longitude is required"),
@@ -120,18 +120,24 @@ export default function UserForm() {
     },
   });
 
+  const getNestedError = (name) => {
+    return name.split(".").reduce((obj, key) => obj?.[key], errors)?.message;
+  };
+
   const onSubmit = async (data) => {
-    console.log("Submit button clicked, Form Data:", data);
+    console.log("onSubmit called!");
+    alert("Submitted!");
+    console.log("Data:", data);
     const formData = new FormData();
-    
+
     // Append the image file
     if (image) {
       formData.append("image", image);
     }
-  
+
     // Stringify the entire data object and append as 'data'
     formData.append("data", JSON.stringify(data));
-  
+
     try {
       const response = await axios.post(
         "http://localhost:3000/create",
@@ -142,16 +148,22 @@ export default function UserForm() {
       );
       console.log("User created successfully:", response.data);
     } catch (error) {
-      console.error("Error creating user:", error.response?.data || error.message);
+      console.error(
+        "Error creating user:",
+        error.response?.data || error.message
+      );
     }
   };
 
+  useEffect(() => {
+    console.log("Validation Errors:", errors);
+  }, [errors]);
 
-  const handleChange = (e) =>{
+  const handleChange = (e) => {
     const file = e.target.files[0];
-  setImage(file);
-  console.log("Selected image:", file);
-  }
+    setImage(file);
+    console.log("Selected image:", file);
+  };
 
   const inputs = [
     { label: "First Name", name: "firstName", type: "text" },
@@ -221,6 +233,7 @@ export default function UserForm() {
         <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">
           User Registration
         </h1>
+        {console.log("Form rendered")}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="grid grid-cols-2 gap-6 max-h-[75vh] overflow-y-auto p-2 pr-4"
@@ -229,12 +242,16 @@ export default function UserForm() {
             <Label className="text-md font-semibold text-gray-700">
               Profile Image
             </Label>
-            {image && (
+            {image ? (
               <img
                 src={URL.createObjectURL(image)}
                 alt="Preview"
                 className="w-42 h-42 rounded-full object-cover shadow-md border border-gray-300 hover:scale-105 transition-transform duration-300"
               />
+            ) : (
+              <div className="w-42 h-42 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 border">
+                No Image
+              </div>
             )}
 
             <Input
@@ -255,20 +272,10 @@ export default function UserForm() {
                 {...register(field.name)}
                 placeholder={`Enter ${field.label.toLowerCase()}`}
               />
-              {field.name.includes(".") ? (
+              {getNestedError(field.name) && (
                 <p className="text-red-500 text-sm">
-                  {
-                    field.name
-                      .split(".")
-                      .reduce((acc, key) => acc?.[key], errors)?.message
-                  }
+                  {getNestedError(field.name)}
                 </p>
-              ) : (
-                errors[field.name] && (
-                  <p className="text-red-500 text-sm">
-                    {errors[field.name]?.message}
-                  </p>
-                )
               )}
             </div>
           ))}
@@ -276,7 +283,7 @@ export default function UserForm() {
           <div className="col-span-2 flex justify-center mt-6">
             <button
               type="submit"
-              className="w-full bg-blue-500 cursor-pointer hover:bg-blue-600 text-white"
+              className="w-full bg-blue-500 cursor-pointer rounded-xl py-2   hover:bg-blue-600 text-white"
             >
               Register
             </button>
@@ -290,7 +297,6 @@ export default function UserForm() {
           Go Back
         </Link>
       </div>
-      
     </div>
   );
 }

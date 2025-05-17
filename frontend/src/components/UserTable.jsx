@@ -218,7 +218,7 @@ export default function UserTable({ searchQuery }) {
       avatar:
         user.image ||
         "https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg",
-      name: user.fullName,
+      name: user.firstname,
       email: user.email,
     },
     phone: user.phone,

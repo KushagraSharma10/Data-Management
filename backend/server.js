@@ -77,7 +77,6 @@ const opt = {
         city: yup.string().required("City is required"),
         state: yup.string().required("State is required"),
         postalCode: yup.string().required("Postal Code is required"),
-        country: yup.string().required("Country is required"),
         coordinates: yup.object().shape({
           lat: yup.number().required("Latitude is required"),
           lng: yup.number().required("Longitude is required"),
@@ -170,22 +169,18 @@ fastify.post("/create", async (request, reply) => {
       const filePath = path.join(uploadDir, imageFilename);
       await pipeline(part.file, fs.createWriteStream(filePath));
     } else if (part.fieldname === 'data') {
-      // Parse the JSON data
       try {
         Object.assign(data, JSON.parse(part.value));
+        console.log("Parsed data on server:", data);
       } catch (err) {
         return reply.status(400).send({ error: "Invalid JSON data" });
       }
     }
   }
 
-  // Add image path to data if uploaded
-  if (!imageFilename) {
-    data.image = `/uploads/${imageFilename}`;
-  }
-
+  // Only add image URL if image is present
   if (imageFilename) {
-    data.image = `http://localhost:3000/uploads/${imageFilename}`; // ✅ Full URL
+    data.image = `http://localhost:3000/uploads/${imageFilename}`;
   }
 
   try {
@@ -198,6 +193,7 @@ fastify.post("/create", async (request, reply) => {
     const result = await collection.insertOne(validated);
     return reply.status(201).send(result);
   } catch (err) {
+    console.error("Validation error:", err);
     return reply.status(400).send({ errors: err.errors || err.message });
   }
 });
