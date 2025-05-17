@@ -261,14 +261,14 @@ export default function BlogForm({ mode = "create" }) {
           {users.map((user) => (
             <MenuItem
               key={user._id}
-              value={user.fullName}
+              value={user.firstName} 
               sx={{
                 fontSize: 15,
                 "&:hover": { bgcolor: "primary.light" },
                 "&.Mui-selected": { bgcolor: "primary.main", color: "white" },
               }}
             >
-              {user.fullName}
+              {user.firstName} {user.lastName}
             </MenuItem>
           ))}
         </TextField>
