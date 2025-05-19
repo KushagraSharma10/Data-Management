@@ -87,7 +87,7 @@ export default function BlogForm({ mode = "create" }) {
         boxShadow: "0px 15px 35px rgba(0,0,0,0.1)",
         background:
           "linear-gradient(to bottom right, #f9fafb 0%, #f3f4f6 100%)",
-        position: "relative", // Added for absolute positioning context
+        position: "relative", 
       }}
     >
       {/* Back Button */}

@@ -24,6 +24,7 @@ import { visuallyHidden } from "@mui/utils";
 import axios from "axios";
 import { Link } from "react-router"; // Corrected from 'react-router'
 import { useEffect } from "react";
+import Header from "./Header";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) return -1;
@@ -221,88 +222,91 @@ export default function BlogTable({ searchQuery = "" }) {
   );
 
   return (
-    <Box className="p-10 border-1  rounded-xl" sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
-        <BlogTableToolbar selected={selected} />
-        <TableContainer>
-          <Table sx={{ minWidth: 750 }}>
-            <BlogTableHead
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={handleRequestSort}
-              numSelected={selected.length}
-              rowCount={visibleRows.length}
-              onSelectAllClick={handleSelectAllClick}
-            />
-            <TableBody>
-              {visibleRows.map((row) => (
-                <TableRow
-                  hover
-                  key={row.id}
-                  role="checkbox"
-                  aria-checked={isSelected(row.id)}
-                  selected={isSelected(row.id)}
-                >
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected(row.id)}
-                      onChange={() => handleClick(row.id)}
-                    />
-                  </TableCell>
-                  <TableCell>{row.sno}</TableCell>
-                  <TableCell>{row.title}</TableCell>
-                  <TableCell>{row.description}</TableCell>
-                  <TableCell>{row.author}</TableCell>
-                  <TableCell>{row.createdAt}</TableCell>
-                  <TableCell>{row.updatedAt}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Link to={`/blogs/view/${row.id}`}>
-                        <Button variant="outlined" size="small">
-                          View
-                        </Button>
-                      </Link>
-                      <Link to={`/blogs/edit/${row.id}`}>
+    <div className="p-10">
+      <Header title = "Blog" path = "/blogs/create" />
+      <Box className="p-2  rounded-xl" sx={{ width: "100%" }}>
+        <Paper sx={{ width: "100%", mb: 2 }}>
+          <BlogTableToolbar selected={selected} />
+          <TableContainer>
+            <Table sx={{ minWidth: 750 }}>
+              <BlogTableHead
+                order={order}
+                orderBy={orderBy}
+                onRequestSort={handleRequestSort}
+                numSelected={selected.length}
+                rowCount={visibleRows.length}
+                onSelectAllClick={handleSelectAllClick}
+              />
+              <TableBody>
+                {visibleRows.map((row) => (
+                  <TableRow
+                    hover
+                    key={row.id}
+                    role="checkbox"
+                    aria-checked={isSelected(row.id)}
+                    selected={isSelected(row.id)}
+                  >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={isSelected(row.id)}
+                        onChange={() => handleClick(row.id)}
+                      />
+                    </TableCell>
+                    <TableCell>{row.sno}</TableCell>
+                    <TableCell>{row.title}</TableCell>
+                    <TableCell>{row.description}</TableCell>
+                    <TableCell>{row.author}</TableCell>
+                    <TableCell>{row.createdAt}</TableCell>
+                    <TableCell>{row.updatedAt}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Link to={`/blogs/view/${row.id}`}>
+                          <Button variant="outlined" size="small">
+                            View
+                          </Button>
+                        </Link>
+                        <Link to={`/blogs/edit/${row.id}`}>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            color="primary"
+                          >
+                            Update
+                          </Button>
+                        </Link>
                         <Button
-                          variant="contained"
+                          variant="outlined"
+                          color="error"
                           size="small"
-                          color="primary"
+                          onClick={() => console.log("Delete", row.id)}
                         >
-                          Update
+                          Delete
                         </Button>
-                      </Link>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        onClick={() => console.log("Delete", row.id)}
-                      >
-                        Delete
-                      </Button>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {visibleRows.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    No blogs found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredRows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
-    </Box>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {visibleRows.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center">
+                      No blogs found.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredRows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+      </Box>
+    </div>
   );
 }

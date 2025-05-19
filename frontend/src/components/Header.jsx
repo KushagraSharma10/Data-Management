@@ -2,7 +2,7 @@ import React from "react";
 import { IoIosSearch, IoMdAdd } from "react-icons/io";
 import { Link } from "react-router";
 
-const Header = ({searchQuery, setSearchQuery}) => {
+const Header = ({searchQuery, setSearchQuery, title, path}) => {
 
   const handleSearch = (e) =>{
     const searchIcon = document.querySelector(".search-icon");
@@ -28,12 +28,12 @@ const Header = ({searchQuery, setSearchQuery}) => {
         <IoIosSearch className="search-icon w-7 h-7 absolute right-2 top-3" />
       </div>
       
-      <Link to="/user/create"
+      <Link to={path}
         href="/user/create"
         className="flex items-center gap-2 px-5 py-3 whitespace-nowrap font-semibold tracking-tight rounded-lg shadow-md bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:scale-105 hover:shadow-lg transition-all duration-300"
       >
         <IoMdAdd className="text-lg" />
-        Add User
+        Add {title}
       </Link>
     </div>
   );

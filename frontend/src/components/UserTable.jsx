@@ -25,6 +25,7 @@ import { Avatar, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router";
+import Header from "./Header";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -190,10 +191,11 @@ UserTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
-export default function UserTable({ searchQuery }) {
+export default function UserTable() {
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
   const [selected, setSelected] = React.useState([]);
+  const[searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = React.useState(0);
   // const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -297,7 +299,9 @@ export default function UserTable({ searchQuery }) {
   );
 
   return (
-    <Box sx={{ width: "100%" }}>
+    <div>
+      <Header  searchQuery = {searchQuery} setSearchQuery = {setSearchQuery} title="User" path = "/user/create" />
+       <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <UserTableToolbar numSelected={selected.length} selected = {selected} />
         <TableContainer>
@@ -407,5 +411,7 @@ export default function UserTable({ searchQuery }) {
         />
       </Paper>
     </Box>
+    </div>
+   
   );
 }
