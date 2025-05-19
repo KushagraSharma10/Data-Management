@@ -367,6 +367,26 @@ fastify.post("/tags", async (request, reply) => {
   }
 })
 
+fastify.get("/tags/:tagId", async (request, reply) => {
+  const { tagId } = request.params;
+
+  try {
+    const tag = await tagCollection.findOne({
+      _id: new fastify.mongo.ObjectId(tagId),
+    });
+
+    if (!tag) {
+      return reply.status(404).send({ message: "Tag not found" });
+    }
+
+    return reply.status(200).send(tag);
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+})
+
+
+
 
 // category routes
 
@@ -379,6 +399,7 @@ fastify.get("/categories", async (request, reply) => {
   }
 })
 
+
 fastify.post("/categories", async (request, reply) => {
   const { categoryName } = request.body;
   try{
@@ -390,6 +411,23 @@ fastify.post("/categories", async (request, reply) => {
   }
 })
 
+fastify.get("/categories/:categoryId", async (request, reply) => {
+  const { categoryId } = request.params;
+
+  try {
+    const category = await categoriesCollection.findOne({
+      _id: new fastify.mongo.ObjectId(categoryId),
+    });
+
+    if (!category) {
+      return reply.status(404).send({ message: "Category not found" });
+    }
+
+    return reply.status(200).send(category);
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+})
 
 
 
