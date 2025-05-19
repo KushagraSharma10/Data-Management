@@ -7,7 +7,7 @@ import {
   MenuItem,
   Paper,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import axios from "axios";
 import { ArrowBack, PhotoCamera, Send } from "@mui/icons-material";
 import { Link, useParams } from "react-router";
@@ -20,24 +20,33 @@ export default function BlogForm({ mode = "create" }) {
     setValue,
     reset,
     watch,
+    control,
     formState: { errors },
   } = useForm();
 
   const [users, setUsers] = useState([]);
   const [preview, setPreview] = useState(null);
+  const [tags, setTags] = useState([]);
+  const [categories, setCategories] = useState([]);
   const isReadOnly = mode === "view";
 
   useEffect(() => {
     axios.get("http://localhost:3000/").then((res) => setUsers(res.data));
+    axios.get("http://localhost:3000/tags").then((res) => setTags(res.data));
+    axios
+      .get("http://localhost:3000/categories")
+      .then((res) => setCategories(res.data));
   }, []);
 
   useEffect(() => {
     if ((mode === "edit" || mode === "view") && blogId) {
       axios.get(`http://localhost:3000/blogs/${blogId}`).then((res) => {
-        const { title, description, author, image } = res.data;
+        const { title, description, author, image, category, tags } = res.data;
         setValue("title", title);
         setValue("description", description);
         setValue("author", author);
+        setValue("category", category);     // ✅ Important
+        setValue("tags", tags || []); 
         setPreview(image);
       });
     }
@@ -48,6 +57,8 @@ export default function BlogForm({ mode = "create" }) {
     formData.append("title", data.title);
     formData.append("author", data.author);
     formData.append("description", data.description);
+    formData.append("category", data.category);
+    formData.append("tags", JSON.stringify(data.tags));
     if (data.image && data.image[0]) formData.append("image", data.image[0]);
 
     try {
@@ -250,7 +261,7 @@ export default function BlogForm({ mode = "create" }) {
           }}
         />
 
-        <TextField
+        {/* <TextField
           select
           label="Select Author"
           defaultValue=""
@@ -291,7 +302,90 @@ export default function BlogForm({ mode = "create" }) {
               {user.firstName} {user.lastName}
             </MenuItem>
           ))}
-        </TextField>
+        </TextField> */}
+
+<Controller
+  name="author"
+  control={control}
+  rules={{ required: "Author is required" }}
+  render={({ field }) => (
+    <TextField
+      select
+      label="Select Author"
+      fullWidth
+      {...field}
+      error={!!errors.author}
+      helperText={errors.author?.message}
+      disabled={isReadOnly || mode === "edit"}
+    >
+      {users.map((user) => (
+        <MenuItem key={user._id} value={user.firstName}>
+          {user.firstName} {user.lastName}
+        </MenuItem>
+      ))}
+    </TextField>
+  )}
+/>
+
+
+        {/* Category - Single Select */}
+        <Controller
+  name="category"
+  control={control}
+  rules={{ required: "Category is required" }}
+  render={({ field }) => (
+    <TextField
+      select
+      label="Select Category"
+      fullWidth
+      {...field}
+      error={!!errors.category}
+      helperText={errors.category?.message}
+      disabled={isReadOnly}
+      InputLabelProps={{
+        shrink: !!field.value, // ✅ Yeh line fix karega
+      }}
+
+    >
+      {categories.map((cat) => (
+        <MenuItem key={cat._id} value={cat.categoryName}>
+          {cat.categoryName}
+        </MenuItem>
+      ))}
+    </TextField>
+  )}
+/>
+
+
+        {/* Tags - Multi Select */}
+        <Controller
+  name="tags"
+  control={control}
+  rules={{ required: "At least one tag is required" }}
+  InputLabelProps={{
+    shrink: true,
+  }}
+  render={({ field }) => (
+    <TextField
+      select
+      label="Select Tags"
+      defaultValue={[]}
+      fullWidth
+      SelectProps={{ multiple: true }}
+      {...field}
+      error={!!errors.tags}
+      helperText={errors.tags?.message}
+      disabled={isReadOnly}
+    >
+      {tags.map((tag) => (
+        <MenuItem key={tag._id} value={tag.tagName}>
+          {tag.tagName}
+        </MenuItem>
+      ))}
+    </TextField>
+  )}
+/>
+
 
         {!isReadOnly && (
           <Button
