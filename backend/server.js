@@ -31,7 +31,9 @@ await fastify.register(cors, {
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 });
+
 await fastify.register(db);
+
 await fastify.register(multipart,{
   attachFieldsToBody: false,
   limits: {
@@ -265,8 +267,6 @@ fastify.post("/blogs", async (request, reply) => {
     return reply.status(500).send({ error: err.message });
   }
 });
-
-
 
 
 fastify.put("/blogs/:blogId", async (request, reply) => {
