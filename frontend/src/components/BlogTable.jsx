@@ -188,18 +188,19 @@ export default function BlogTable({ searchQuery = "" }) {
   }, []);
 
   const filteredRows = blogs
-    .filter((blog) =>
-      blog.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .map((blog, index) => ({
-      sno: index + 1,
-      id: blog._id,
-      title: blog.title,
-      description: blog.description,
-      author: blog.author,
-      createdAt: new Date(blog.createdAt).toLocaleDateString(),
-      updatedAt: new Date(blog.updatedAt).toLocaleDateString(),
-    }));
+  .filter((blog) =>
+    blog.title.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  .map((blog, index) => ({
+    sno: page * rowsPerPage + index + 1, // ✅ fix S.No
+    id: blog._id,
+    title: blog.title,
+    description: blog.description,
+    author: blog.author,
+    createdAt: new Date(blog.createdAt).toLocaleDateString(),
+    updatedAt: new Date(blog.updatedAt).toLocaleDateString(),
+  }));
+
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -222,11 +223,26 @@ export default function BlogTable({ searchQuery = "" }) {
   );
 
 
-  const handleDelete = (id) => {
-    const newSelected = selected.filter((item) => item !== id);
-    setSelected(newSelected);
-    setBlogs(blogs.filter((blog) => blog._id !== id));
+  const handleDelete = async (id) => {
+    const confirm = window.confirm("Are you sure you want to delete this blog?");
+    if (!confirm) return;
+  
+    try {
+      const response = await axios.delete(`http://localhost:3000/blogs/${id}`);
+  
+      if (response.status === 200) {
+        const newSelected = selected.filter((item) => item !== id);
+        setSelected(newSelected);
+        setBlogs(blogs.filter((blog) => blog._id !== id));
+      } else {
+        console.error("Delete failed:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting blog:", error.response?.data || error.message);
+    }
   };
+  
+  
 
   return (
     <div className="py-10 px-4">
@@ -285,7 +301,7 @@ export default function BlogTable({ searchQuery = "" }) {
                           variant="outlined"
                           color="error"
                           size="small"
-                          onClick={() => console.log("Delete", row.id)}
+                          onClick={() =>handleDelete(row.id)}
                         >
                           Delete
                         </Button>
