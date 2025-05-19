@@ -25,7 +25,12 @@ await fastify.register(fastifyStatic, {
   prefix: '/uploads/',
 });
 
-await fastify.register(cors);
+await fastify.register(cors, {
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+});
 await fastify.register(db);
 await fastify.register(multipart,{
   attachFieldsToBody: false,

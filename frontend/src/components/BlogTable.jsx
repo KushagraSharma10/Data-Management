@@ -263,7 +263,7 @@ export default function BlogTable({ searchQuery = "" }) {
                     <TableCell>{row.title}</TableCell>
                     <TableCell>{row.description}</TableCell>
                     <TableCell>{row.author}</TableCell>
-                    <TableCell>{row.createdAt}</TableCell>
+                    <TableCell>{new Date(row.createdAt).toLocaleString()}</TableCell>
                     <TableCell>{row.updatedAt}</TableCell>
                     <TableCell>
                       <Box sx={{ display: "flex", gap: 1 }}>

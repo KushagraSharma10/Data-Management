@@ -255,7 +255,10 @@ export default function BlogForm({ mode = "create" }) {
           label="Select Author"
           defaultValue=""
           variant="outlined"
-          {...register("author", { required: "Author is required" })}
+          {...register(
+            "author",
+            mode === "create" ? { required: "Author is required" } : {}
+          )}
           error={!!errors.author}
           helperText={errors.author?.message}
           disabled={isReadOnly || mode === "edit"}
