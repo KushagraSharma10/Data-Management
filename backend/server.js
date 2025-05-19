@@ -18,8 +18,6 @@ const yupOptions = {
   recursive: true
 }
 
-
-
 await fastify.register(fastifyStatic, {
   root: path.join(process.cwd(), 'uploads'),
   prefix: '/uploads/',
@@ -45,8 +43,8 @@ await fastify.register(multipart,{
 
 const collection = fastify.mongo.db.collection("Users");
 const blogCollection = fastify.mongo.db.collection("Blogs");
-
-
+const tagCollection = fastify.mongo.db.collection("Tags");
+const categoriesCollection = fastify.mongo.db.collection("Categories");
 
 const uploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -136,7 +134,6 @@ const opt = {
     }
   
 }
-
 
 fastify.get("/", async (request, reply) => {
   // const query = request.query.query;
@@ -346,6 +343,53 @@ fastify.delete("/blogs/:blogId", async (request, reply) => {
     return reply.status(500).send({ error: err.message });
   }
 });
+
+fastify.get("/tags", async (request, reply) => {
+  try {
+    const tags = await tagCollection.find().toArray();
+    return reply.status(200).send(tags);
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+})
+
+fastify.post("/tags", async (request, reply) => {
+  const { tagName } = request.body;
+  if (!tagName) {
+    return reply.status(400).send({ message: "Tag name is required" });
+  }
+
+  try {
+    const result = await tagCollection.insertOne({ tagName });
+    return reply.status(201).send({ message: "Tag created", result });
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+})
+
+
+// category routes
+
+fastify.get("/categories", async (request, reply) => {
+  try {
+    const tags = await categoriesCollection.find().toArray();
+    return reply.status(200).send(tags);
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+})
+
+fastify.post("/categories", async (request, reply) => {
+  const { categoryName } = request.body;
+  try{
+    const categories = await categoriesCollection.insertOne({categoryName})
+    return reply.status(200).send({ data: categories,message: "Category created", categories})
+  }
+  catch(err){
+    return reply.status(500).send({error: err.message})
+  }
+})
+
 
 
 
