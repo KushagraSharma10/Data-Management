@@ -221,10 +221,17 @@ export default function BlogTable({ searchQuery = "" }) {
     [order, orderBy, page, rowsPerPage, filteredRows]
   );
 
+
+  const handleDelete = (id) => {
+    const newSelected = selected.filter((item) => item !== id);
+    setSelected(newSelected);
+    setBlogs(blogs.filter((blog) => blog._id !== id));
+  };
+
   return (
-    <div className="p-10">
+    <div className="py-10 px-4">
       <Header title = "Blog" path = "/blogs/create" />
-      <Box className="p-2  rounded-xl" sx={{ width: "100%" }}>
+      <Box className="p-2 rounded-xl" sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
           <BlogTableToolbar selected={selected} />
           <TableContainer>

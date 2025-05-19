@@ -238,11 +238,8 @@ fastify.post("/blogs", async (request, reply) => {
     if (part.file) {
       imageFilename = `${Date.now()}-${part.filename}`;
       const filePath = path.join(uploadDir, imageFilename);
-      console.log("Saving file to:", filePath);
       await pipeline(part.file, fs.createWriteStream(filePath));
     } else {
-      // Field data (title, author, description etc)
-      console.log(`${part.fieldname}: ${part.value}`); // ✅ DEBUG
       blog[part.fieldname] = part.value;
     }
   }
@@ -251,36 +248,22 @@ fastify.post("/blogs", async (request, reply) => {
     blog.image = `http://localhost:3000/uploads/${imageFilename}`;
   }
 
+  // 🕒 Add timestamps
+  blog.createdAt = new Date();
+  blog.updatedAt = new Date();
+
   try {
     const result = await blogCollection.insertOne(blog);
-    blog._id = result.insertedId; // ✅ manually add inserted ID
+    blog._id = result.insertedId;
     return reply.status(201).send({ data: blog, message: "Blog created", result });
   } catch (err) {
     return reply.status(500).send({ error: err.message });
   }
 });
 
-// ⬇️ Get Blog by ID
-fastify.get("/blogs/:blogId", async (request, reply) => {
-  const { blogId } = request.params;
-
-  try {
-    const blog = await blogCollection.findOne({
-      _id: new fastify.mongo.ObjectId(blogId),
-    });
-
-    if (!blog) {
-      return reply.status(404).send({ message: "Blog not found" });
-    }
-
-    return reply.status(200).send(blog);
-  } catch (err) {
-    return reply.status(500).send({ error: err.message });
-  }
-});
 
 
-// ⬇️ Update Blog
+
 fastify.put("/blogs/:blogId", async (request, reply) => {
   const { blogId } = request.params;
   const updatedData = {};
@@ -301,6 +284,9 @@ fastify.put("/blogs/:blogId", async (request, reply) => {
     updatedData.image = `http://localhost:3000/uploads/${imageFilename}`;
   }
 
+  // 🕒 Update timestamp
+  updatedData.updatedAt = new Date();
+
   try {
     const result = await blogCollection.updateOne(
       { _id: new fastify.mongo.ObjectId(blogId) },
@@ -318,7 +304,26 @@ fastify.put("/blogs/:blogId", async (request, reply) => {
 });
 
 
-// ⬇️ Delete Blog
+fastify.get("/blogs/:blogId", async (request, reply) => {
+  const { blogId } = request.params;
+
+  try {
+    const blog = await blogCollection.findOne({
+      _id: new fastify.mongo.ObjectId(blogId),
+    });
+
+    if (!blog) {
+      return reply.status(404).send({ message: "Blog not found" });
+    }
+
+    return reply.status(200).send(blog);
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
+
+
+
 fastify.delete("/blogs/:blogId", async (request, reply) => {
   const { blogId } = request.params;
 

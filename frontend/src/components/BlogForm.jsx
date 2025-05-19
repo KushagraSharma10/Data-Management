@@ -19,6 +19,7 @@ export default function BlogForm({ mode = "create" }) {
     handleSubmit,
     setValue,
     reset,
+    watch,
     formState: { errors },
   } = useForm();
 
@@ -37,7 +38,7 @@ export default function BlogForm({ mode = "create" }) {
         setValue("title", title);
         setValue("description", description);
         setValue("author", author);
-        setPreview(`http://localhost:3000/uploads/${image}`); // assuming file path
+        setPreview(image);
       });
     }
   }, [mode, blogId, setValue]);
@@ -87,7 +88,7 @@ export default function BlogForm({ mode = "create" }) {
         boxShadow: "0px 15px 35px rgba(0,0,0,0.1)",
         background:
           "linear-gradient(to bottom right, #f9fafb 0%, #f3f4f6 100%)",
-        position: "relative", 
+        position: "relative",
       }}
     >
       {/* Back Button */}
@@ -139,7 +140,11 @@ export default function BlogForm({ mode = "create" }) {
           },
         }}
       >
-        {mode === "edit" ? "Edit Blog" : mode === "view" ? "View Blog" : "Create New Blog"}
+        {mode === "edit"
+          ? "Edit Blog"
+          : mode === "view"
+          ? "View Blog"
+          : "Create New Blog"}
       </Typography>
       <Box
         component="form"
@@ -207,6 +212,10 @@ export default function BlogForm({ mode = "create" }) {
           error={!!errors.title}
           helperText={errors.title?.message}
           disabled={isReadOnly}
+          InputLabelProps={{
+            shrink: !!watch("title") || isReadOnly, // This ensures label shrinks when field has a value or in view mode
+          }}
+          placeholder={!isReadOnly ? "Enter the blog title" : ""}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 2,
@@ -229,6 +238,10 @@ export default function BlogForm({ mode = "create" }) {
           error={!!errors.description}
           helperText={errors.description?.message}
           disabled={isReadOnly}
+          InputLabelProps={{
+            shrink: !!watch("description") || isReadOnly,
+          }}
+          placeholder={!isReadOnly ? "Enter blog content" : ""}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 2,
@@ -245,7 +258,11 @@ export default function BlogForm({ mode = "create" }) {
           {...register("author", { required: "Author is required" })}
           error={!!errors.author}
           helperText={errors.author?.message}
-          disabled={isReadOnly}
+          disabled={isReadOnly || mode === "edit"}
+          InputLabelProps={{
+            shrink: !!watch("author") || isReadOnly,
+          }}
+          placeholder={!isReadOnly ? "Choose author" : ""}
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 2,
@@ -261,7 +278,7 @@ export default function BlogForm({ mode = "create" }) {
           {users.map((user) => (
             <MenuItem
               key={user._id}
-              value={user.firstName} 
+              value={user.firstName}
               sx={{
                 fontSize: 15,
                 "&:hover": { bgcolor: "primary.light" },
@@ -285,17 +302,31 @@ export default function BlogForm({ mode = "create" }) {
               fontWeight: 600,
               textTransform: "none",
               borderRadius: 2,
-              bgcolor: "success.main",
+              bgcolor: mode === "edit" ? "warning.main" : "success.main",
               "&:hover": {
-                bgcolor: "success.dark",
+                bgcolor: mode === "edit" ? "warning.dark" : "success.dark",
                 transform: "translateY(-2px)",
                 boxShadow: 3,
               },
               transition: "all 0.2s ease",
             }}
           >
-            Publish Blog
+            {mode === "edit" ? "Update Blog" : "Publish Blog"}
           </Button>
+        )}
+
+        {isReadOnly && (
+          <Typography
+            variant="body1"
+            sx={{
+              mt: 3,
+              fontSize: 16,
+              color: "text.secondary",
+              textAlign: "center",
+            }}
+          >
+            This is a read-only view of the blog.
+          </Typography>
         )}
       </Box>
     </Paper>

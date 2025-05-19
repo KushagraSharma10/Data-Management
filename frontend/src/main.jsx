@@ -32,7 +32,7 @@ let router = createBrowserRouter([
     element: <BlogForm />,
   },
   {
-    path: "/blogs/edit/row.id",
+    path: "/blogs/edit/:blogId",
     element: <BlogForm mode="edit" />,
   },
   {
