@@ -34,6 +34,7 @@ import { Link } from "react-router"; // Corrected from 'react-router'
 import { useEffect } from "react";
 import Header from "./Header";
 import { IoFilter } from "react-icons/io5";
+import CloseIcon from '@mui/icons-material/Close';
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) return -1;
@@ -416,89 +417,145 @@ export default function BlogTable({ searchQuery = "" }) {
 
   return (
     <div className="py-10 px-4">
-      <Popover
-        id={id}
-        open={open}
-        anchorEl={filterAnchorEl}
-        onClose={handleFilterClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "right",
+     <Popover
+  id={id}
+  open={open}
+  anchorEl={filterAnchorEl}
+  onClose={handleFilterClose}
+  anchorOrigin={{
+    vertical: "bottom",
+    horizontal: "right",
+  }}
+  transformOrigin={{
+    vertical: "top",
+    horizontal: "right",
+  }}
+  sx={{
+    "& .MuiPaper-root": {
+      borderRadius: "12px",
+      boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
+    },
+  }}
+>
+  <Box sx={{ p: 3, width: 300 }}>
+    {/* Header */}
+    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+        Filters
+      </Typography>
+      <IconButton size="small" onClick={handleFilterClose}>
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </Box>
+
+    {/* Category Section */}
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1, color: "text.secondary" }}>
+        Categories
+      </Typography>
+      <FormGroup sx={{ maxHeight: 150, overflowY: "auto", pr: 1 }}>
+        {allCategories.map((cat) => (
+          <FormControlLabel
+            key={cat._id}
+            control={
+              <Checkbox
+                size="small"
+                checked={tempSelectedCategories.includes(cat.categoryName)}
+                onChange={() => {
+                  setTempSelectedCategories((prev) =>
+                    prev.includes(cat.categoryName)
+                      ? prev.filter((c) => c !== cat.categoryName)
+                      : [...prev, cat.categoryName]
+                  );
+                }}
+                sx={{ py: 0.5 }}
+              />
+            }
+            label={
+              <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
+                {cat.categoryName}
+              </Typography>
+            }
+            sx={{ my: 0 }}
+          />
+        ))}
+      </FormGroup>
+    </Box>
+
+    {/* Tags Section */}
+    <Box sx={{ mb: 3 }}>
+      <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1, color: "text.secondary" }}>
+        Tags
+      </Typography>
+      {allTags.length === 0 ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+          <CircularProgress size={20} />
+        </Box>
+      ) : (
+        <FormGroup sx={{ maxHeight: 150, overflowY: "auto", pr: 1 }}>
+          {allTags.map((tag) => (
+            <FormControlLabel
+              key={tag._id}
+              control={
+                <Checkbox
+                  size="small"
+                  checked={tempSelectedTags.includes(tag.tagName)}
+                  onChange={() => {
+                    setTempSelectedTags((prev) =>
+                      prev.includes(tag.tagName)
+                        ? prev.filter((t) => t !== tag.tagName)
+                        : [...prev, tag.tagName]
+                    );
+                  }}
+                  sx={{ py: 0.5 }}
+                />
+              }
+              label={
+                <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
+                  {tag.tagName}
+                </Typography>
+              }
+              sx={{ my: 0 }}
+            />
+          ))}
+        </FormGroup>
+      )}
+    </Box>
+
+    {/* Action Buttons */}
+    <Box sx={{ display: "flex", justifyContent: "space-between", pt: 1, borderTop: "1px solid", borderColor: "divider" }}>
+      <Button
+        size="small"
+        onClick={handleClearFilters}
+        sx={{
+          textTransform: "none",
+          color: "text.secondary",
+          "&:hover": {
+            backgroundColor: "action.hover",
+          },
         }}
       >
-        <Box sx={{ p: 2, width: 250 }}>
-          <Typography variant="subtitle1">Filter By Category</Typography>
-          <FormControl component="fieldset">
-            <FormGroup>
-              {allCategories.map((cat) => (
-                <FormControlLabel
-                  key={cat._id}
-                  control={
-                    <Checkbox
-                      checked={tempSelectedCategories.includes(
-                        cat.categoryName
-                      )}
-                      onChange={() => {
-                        setTempSelectedCategories((prev) =>
-                          prev.includes(cat.categoryName)
-                            ? prev.filter((c) => c !== cat.categoryName)
-                            : [...prev, cat.categoryName]
-                        );
-                      }}
-                    />
-                  }
-                  label={cat.categoryName}
-                />
-              ))}
-            </FormGroup>
-          </FormControl>
-
-          <Typography variant="subtitle1" sx={{ mt: 2 }}>
-            Filter By Tags
-          </Typography>
-          <FormGroup>
-            {allTags.length === 0 ? (
-              <CircularProgress size={20} />
-            ) : (
-              allTags.map((tag) => (
-                <FormControlLabel
-                  key={tag._id}
-                  control={
-                    <Checkbox
-                      checked={tempSelectedTags.includes(tag.tagName)}
-                      onChange={() => {
-                        setTempSelectedTags((prev) =>
-                          prev.includes(tag.tagName)
-                            ? prev.filter((t) => t !== tag.tagName)
-                            : [...prev, tag.tagName]
-                        );
-                      }}
-                    />
-                  }
-                  label={tag.tagName}
-                />
-              ))
-            )}
-          </FormGroup>
-
-          <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}>
-            <Button size="small" onClick={handleClearFilters}>
-              Clear
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={handleApplyFilters}
-            >
-              Apply
-            </Button>
-          </Box>
-        </Box>
-      </Popover>
+        Clear all
+      </Button>
+      <Button
+        size="small"
+        variant="contained"
+        onClick={handleApplyFilters}
+        sx={{
+          textTransform: "none",
+          px: 2,
+          borderRadius: "6px",
+          boxShadow: "none",
+          "&:hover": {
+            boxShadow: "none",
+          },
+        }}
+      >
+        Apply Filters
+      </Button>
+    </Box>
+  </Box>
+</Popover>
 
       <Header title="Blog" path="/blogs/create" />
       <Box className="p-2 rounded-xl" sx={{ width: "100%" }}>
