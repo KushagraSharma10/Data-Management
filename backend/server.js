@@ -233,6 +233,39 @@ fastify.get("/blogs", async (request, reply) => {
 });
 
 
+// fastify.post("/blogs", async (request, reply) => {
+//   const blog = {};
+//   let imageFilename = null;
+
+//   const parts = request.parts();
+//   for await (const part of parts) {
+//     if (part.file) {
+//       imageFilename = `${Date.now()}-${part.filename}`;
+//       const filePath = path.join(uploadDir, imageFilename);
+//       await pipeline(part.file, fs.createWriteStream(filePath));
+//     } else {
+//       blog[part.fieldname] = part.value;
+//     }
+//   }
+
+//   if (imageFilename) {
+//     blog.image = `http://localhost:3000/uploads/${imageFilename}`;
+//   }
+
+//   // 🕒 Add timestamps
+//   blog.createdAt = new Date();
+//   blog.updatedAt = new Date();
+
+//   try {
+//     const result = await blogCollection.insertOne(blog);
+//     blog._id = result.insertedId;
+//     return reply.status(201).send({ data: blog, message: "Blog created", result });
+//   } catch (err) {
+//     return reply.status(500).send({ error: err.message });
+//   }
+// });
+
+
 fastify.post("/blogs", async (request, reply) => {
   const blog = {};
   let imageFilename = null;
@@ -244,7 +277,16 @@ fastify.post("/blogs", async (request, reply) => {
       const filePath = path.join(uploadDir, imageFilename);
       await pipeline(part.file, fs.createWriteStream(filePath));
     } else {
-      blog[part.fieldname] = part.value;
+      // part.value is always string, parse tags if needed
+      if (part.fieldname === "tags") {
+        try {
+          blog.tags = JSON.parse(part.value);
+        } catch {
+          blog.tags = part.value; // fallback if not JSON
+        }
+      } else {
+        blog[part.fieldname] = part.value;
+      }
     }
   }
 
@@ -252,7 +294,6 @@ fastify.post("/blogs", async (request, reply) => {
     blog.image = `http://localhost:3000/uploads/${imageFilename}`;
   }
 
-  // 🕒 Add timestamps
   blog.createdAt = new Date();
   blog.updatedAt = new Date();
 

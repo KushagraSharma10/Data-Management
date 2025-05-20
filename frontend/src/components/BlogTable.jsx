@@ -165,7 +165,15 @@ export default function BlogTable({ searchQuery = "" }) {
   const [allTags, setAllTags] = React.useState([]);
   const [allCategories, setAllCategories] = React.useState([]);
   const [selectedTags, setSelectedTags] = React.useState([]);
-  const [selectedCategory, setSelectedCategory] = React.useState("");
+  const [selectedCategory, setSelectedCategory] = React.useState([]);
+  const [appliedTags, setAppliedTags] = React.useState([]);
+  const [appliedCategories, setAppliedCategories] = React.useState([]);
+
+  // These are temporary filters inside the filter popover
+  const [tempSelectedTags, setTempSelectedTags] = React.useState([]);
+  const [tempSelectedCategories, setTempSelectedCategories] = React.useState(
+    []
+  );
 
   const isSelected = (id) => selected.indexOf(id) !== -1;
 
@@ -189,11 +197,13 @@ export default function BlogTable({ searchQuery = "" }) {
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
   };
-
   const handleClearFilters = () => {
-    setSelectedTags([]);
-    setSelectedCategory("");
+    setTempSelectedTags([]);
+    setTempSelectedCategories([]);
+    setAppliedTags([]);
+    setAppliedCategories([]);
   };
+  
 
   useEffect(() => {
     const fetchFilters = async () => {
@@ -204,6 +214,10 @@ export default function BlogTable({ searchQuery = "" }) {
         ]);
         setAllTags(tagsRes.data);
         setAllCategories(categoryRes.data);
+
+        // Initialize temp selections to applied filters or empty
+        setTempSelectedTags(appliedTags);
+        setTempSelectedCategories(appliedCategories);
       } catch (err) {
         console.error("Failed to fetch tags or categories:", err);
       }
@@ -238,6 +252,12 @@ export default function BlogTable({ searchQuery = "" }) {
     }
 
     setSelected(newSelected);
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedTags(tempSelectedTags);
+    setAppliedCategories(tempSelectedCategories);
+    handleFilterClose();
   };
 
   useEffect(() => {
@@ -285,8 +305,12 @@ export default function BlogTable({ searchQuery = "" }) {
           const matchesTitle = blog.title
             .toLowerCase()
             .includes(searchQuery.toLowerCase());
+  
+          // Use appliedCategories, not selectedCategory
           const matchesCategory =
-            !selectedCategory || blog.category === selectedCategory;
+            appliedCategories.length === 0 ||
+            appliedCategories.includes(blog.category);
+  
           const blogTags = (() => {
             try {
               return JSON.parse(blog.tags);
@@ -294,9 +318,12 @@ export default function BlogTable({ searchQuery = "" }) {
               return [];
             }
           })();
+  
+          // Use appliedTags, not selectedTags
           const matchesTags =
-            selectedTags.length === 0 ||
-            selectedTags.every((tag) => blogTags.includes(tag));
+            appliedTags.length === 0 ||
+            appliedTags.every((tag) => blogTags.includes(tag));
+  
           return matchesTitle && matchesCategory && matchesTags;
         })
         .sort(getComparator(order, orderBy))
@@ -318,28 +345,42 @@ export default function BlogTable({ searchQuery = "" }) {
           createdAt: new Date(blog.createdAt).toLocaleDateString("en-GB"),
           updatedAt: new Date(blog.updatedAt).toLocaleDateString("en-GB"),
         })),
-    [blogs, order, orderBy, page, rowsPerPage, searchQuery, selectedTags, selectedCategory] // ✅ updated
+    [
+      blogs,
+      order,
+      orderBy,
+      page,
+      rowsPerPage,
+      searchQuery,
+      appliedTags,        // changed here
+      appliedCategories,  // changed here
+    ]
   );
-  
-  const totalFiltered = blogs.filter((blog) => {
-    const matchesTitle = blog.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      !selectedCategory || blog.category === selectedCategory;
-    const blogTags = (() => {
-      try {
-        return JSON.parse(blog.tags);
-      } catch {
-        return [];
-      }
-    })();
-    const matchesTags =
-      selectedTags.length === 0 ||
-      selectedTags.every((tag) => blogTags.includes(tag));
-    return matchesTitle && matchesCategory && matchesTags;
-  });
-  
+
+
+ const totalFiltered = blogs.filter((blog) => {
+  const matchesTitle = blog.title
+    .toLowerCase()
+    .includes(searchQuery.toLowerCase());
+
+  const matchesCategory =
+    appliedCategories.length === 0 ||
+    appliedCategories.includes(blog.category);
+
+  const blogTags = (() => {
+    try {
+      return JSON.parse(blog.tags);
+    } catch {
+      return [];
+    }
+  })();
+
+  const matchesTags =
+    appliedTags.length === 0 ||
+    appliedTags.every((tag) => blogTags.includes(tag));
+
+  return matchesTitle && matchesCategory && matchesTags;
+});
 
   const handleDelete = async (id) => {
     const confirm = window.confirm(
@@ -365,6 +406,14 @@ export default function BlogTable({ searchQuery = "" }) {
     }
   };
 
+  const handleCategoryCheckboxChange = (categoryName) => {
+    setSelectedCategory((prev) =>
+      prev.includes(categoryName)
+        ? prev.filter((cat) => cat !== categoryName)
+        : [...prev, categoryName]
+    );
+  };
+
   return (
     <div className="py-10 px-4">
       <Popover
@@ -384,19 +433,28 @@ export default function BlogTable({ searchQuery = "" }) {
         <Box sx={{ p: 2, width: 250 }}>
           <Typography variant="subtitle1">Filter By Category</Typography>
           <FormControl component="fieldset">
-            <RadioGroup
-              value={selectedCategory}
-              onChange={handleCategoryChange}
-            >
+            <FormGroup>
               {allCategories.map((cat) => (
                 <FormControlLabel
-                key={cat._id}
-                value={cat.categoryName} // ✅ use categoryName
-                control={<Radio />}
-                label={cat.categoryName} // ✅ use categoryName
-              />
+                  key={cat._id}
+                  control={
+                    <Checkbox
+                      checked={tempSelectedCategories.includes(
+                        cat.categoryName
+                      )}
+                      onChange={() => {
+                        setTempSelectedCategories((prev) =>
+                          prev.includes(cat.categoryName)
+                            ? prev.filter((c) => c !== cat.categoryName)
+                            : [...prev, cat.categoryName]
+                        );
+                      }}
+                    />
+                  }
+                  label={cat.categoryName}
+                />
               ))}
-            </RadioGroup>
+            </FormGroup>
           </FormControl>
 
           <Typography variant="subtitle1" sx={{ mt: 2 }}>
@@ -411,8 +469,14 @@ export default function BlogTable({ searchQuery = "" }) {
                   key={tag._id}
                   control={
                     <Checkbox
-                      checked={selectedTags.includes(tag.tagName)}
-                      onChange={() => handleTagChange(tag.tagName)}
+                      checked={tempSelectedTags.includes(tag.tagName)}
+                      onChange={() => {
+                        setTempSelectedTags((prev) =>
+                          prev.includes(tag.tagName)
+                            ? prev.filter((t) => t !== tag.tagName)
+                            : [...prev, tag.tagName]
+                        );
+                      }}
                     />
                   }
                   label={tag.tagName}
@@ -428,7 +492,7 @@ export default function BlogTable({ searchQuery = "" }) {
             <Button
               size="small"
               variant="contained"
-              onClick={handleFilterClose}
+              onClick={handleApplyFilters}
             >
               Apply
             </Button>

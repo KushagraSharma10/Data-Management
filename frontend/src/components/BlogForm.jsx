@@ -58,7 +58,15 @@ export default function BlogForm({ mode = "create" }) {
     formData.append("author", data.author);
     formData.append("description", data.description);
     formData.append("category", data.category);
-    formData.append("tags", JSON.stringify(data.tags));
+    let tagsArray = data.tags;
+    if (typeof tagsArray === "string") {
+      try {
+        tagsArray = JSON.parse(tagsArray);
+      } catch {
+        tagsArray = [];
+      }
+    }
+    formData.append("tags", JSON.stringify(tagsArray));
     if (data.image && data.image[0]) formData.append("image", data.image[0]);
 
     try {
