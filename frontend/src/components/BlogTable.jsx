@@ -307,7 +307,7 @@ export default function BlogTable({ searchQuery = "" }) {
           title: blog.title,
           description: blog.description,
           author: blog.author,
-          category: blog.category, // ➕ added
+          category: blog.category,
           tags: (() => {
             try {
               return JSON.parse(blog.tags);
@@ -315,15 +315,31 @@ export default function BlogTable({ searchQuery = "" }) {
               return [];
             }
           })(),
-          createdAt: new Date(blog.createdAt).toLocaleDateString("en-GB"), // formatted
+          createdAt: new Date(blog.createdAt).toLocaleDateString("en-GB"),
           updatedAt: new Date(blog.updatedAt).toLocaleDateString("en-GB"),
         })),
-    [blogs, order, orderBy, page, rowsPerPage, searchQuery]
+    [blogs, order, orderBy, page, rowsPerPage, searchQuery, selectedTags, selectedCategory] // ✅ updated
   );
-
-  const totalFiltered = blogs.filter((blog) =>
-    blog.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  
+  const totalFiltered = blogs.filter((blog) => {
+    const matchesTitle = blog.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      !selectedCategory || blog.category === selectedCategory;
+    const blogTags = (() => {
+      try {
+        return JSON.parse(blog.tags);
+      } catch {
+        return [];
+      }
+    })();
+    const matchesTags =
+      selectedTags.length === 0 ||
+      selectedTags.every((tag) => blogTags.includes(tag));
+    return matchesTitle && matchesCategory && matchesTags;
+  });
+  
 
   const handleDelete = async (id) => {
     const confirm = window.confirm(
@@ -374,11 +390,11 @@ export default function BlogTable({ searchQuery = "" }) {
             >
               {allCategories.map((cat) => (
                 <FormControlLabel
-                  key={cat._id}
-                  value={cat.name}
-                  control={<Radio />}
-                  label={cat.name}
-                />
+                key={cat._id}
+                value={cat.categoryName} // ✅ use categoryName
+                control={<Radio />}
+                label={cat.categoryName} // ✅ use categoryName
+              />
               ))}
             </RadioGroup>
           </FormControl>
@@ -395,8 +411,8 @@ export default function BlogTable({ searchQuery = "" }) {
                   key={tag._id}
                   control={
                     <Checkbox
-                      checked={selectedTags.includes(tag.name)}
-                      onChange={() => handleTagChange(tag.name)}
+                      checked={selectedTags.includes(tag.tagName)}
+                      onChange={() => handleTagChange(tag.tagName)}
                     />
                   }
                   label={tag.tagName}
