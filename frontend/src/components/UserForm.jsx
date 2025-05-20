@@ -4,13 +4,13 @@ import * as yup from "yup";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { CircularProgress } from "@mui/material";
 // import { set } from "date-fns";
 
-// 🔴 Removed image URL validation from schema
 const schema = yup.object().shape({
   firstName: yup.string().required("First Name is required"),
   lastName: yup.string().required("Last Name is required"),
@@ -78,12 +78,18 @@ const schema = yup.object().shape({
   role: yup.string().required("Role is required"),
 });
 
-export default function UserForm() {
+export default function UserForm({ mode = "create" }) {
+  const { userId } = useParams();
   const [image, setImage] = useState(null);
+  const [existingImage, setExistingImage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
@@ -124,41 +130,54 @@ export default function UserForm() {
     return name.split(".").reduce((obj, key) => obj?.[key], errors)?.message;
   };
 
-  const onSubmit = async (data) => {
-    console.log("onSubmit called!");
-    alert("Submitted!");
-    console.log("Data:", data);
-    const formData = new FormData();
-
-    // Append the image file
-    if (image) {
-      formData.append("image", image);
-    }
-
-    // Stringify the entire data object and append as 'data'
-    formData.append("data", JSON.stringify(data));
-
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/create",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
+  useEffect(() => {
+    if (mode !== "create") {
+      const fetchUser = async () => {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(`http://localhost:3000/user/${userId}`);
+          reset(res.data);
+          if (res.data.image) setExistingImage(res.data.image);
+        } catch (err) {
+          console.error("Failed to fetch user:", err);
+        } finally {
+          setIsLoading(false);
         }
-      );
-      console.log("User created successfully:", response.data);
-    } catch (error) {
-      console.error(
-        "Error creating user:",
-        error.response?.data || error.message
-      );
+      };
+      fetchUser();
+    }
+  }, [userId, mode, reset]);
+
+  const onSubmit = async (data) => {
+    if (mode === "view") return;
+  
+    try {
+      const formData = new FormData();
+      if (image) formData.append("image", image);
+      formData.append("data", JSON.stringify(data));
+  
+      if (mode === "create") {
+        await axios.post("http://localhost:3000/create", formData);
+        alert("User created successfully!");
+        navigate("/users"); // Redirect after creation
+      } else {
+        await axios.put(`http://localhost:3000/user/${userId}`, formData);
+        alert("User updated successfully!");
+      }
+    } catch (err) {
+      console.error("Operation failed:", err);
+      alert(err.response?.data?.message || "Operation failed");
     }
   };
 
-  useEffect(() => {
-    console.log("Validation Errors:", errors);
-  }, [errors]);
+  if (isLoading) return <CircularProgress />;
 
+  if (isLoading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <CircularProgress size={60} />
+    </div>
+  );
+  
   const handleChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
@@ -174,7 +193,12 @@ export default function UserForm() {
     { label: "Email", name: "email", type: "email" },
     { label: "Phone", name: "phone", type: "text" },
     { label: "Username", name: "username", type: "text" },
-    { label: "Password", name: "password", type: "password" },
+    {
+      label: "Password",
+      name: "password",
+      type: "password",
+      disabled: mode === "edit",
+    },
     { label: "Birth Date", name: "birthDate", type: "date" },
     { label: "Blood Group", name: "bloodGroup", type: "text" },
     { label: "Height", name: "height", type: "number" },
@@ -231,9 +255,12 @@ export default function UserForm() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-200 p-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-6xl p-10">
         <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">
-          User Registration
+          {mode === "view"
+            ? "User Details"
+            : mode === "edit"
+            ? "Edit User"
+            : "User Registration"}
         </h1>
-        {console.log("Form rendered")}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="grid grid-cols-2 gap-6 max-h-[75vh] overflow-y-auto p-2 pr-4"
@@ -242,9 +269,9 @@ export default function UserForm() {
             <Label className="text-md font-semibold text-gray-700">
               Profile Image
             </Label>
-            {image ? (
+            {existingImage || image ? (
               <img
-                src={URL.createObjectURL(image)}
+                src={image ? URL.createObjectURL(image) : existingImage}
                 alt="Preview"
                 className="w-42 h-42 rounded-full object-cover shadow-md border border-gray-300 hover:scale-105 transition-transform duration-300"
               />
@@ -253,15 +280,15 @@ export default function UserForm() {
                 No Image
               </div>
             )}
-
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleChange}
-              className="w-fit"
-            />
+            {mode !== "view" && (
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleChange}
+                className="w-fit"
+              />
+            )}
           </div>
-
           {inputs.map((field) => (
             <div key={field.name} className="flex flex-col">
               <Label className="text-md font-semibold mb-1 text-gray-700">
@@ -271,6 +298,10 @@ export default function UserForm() {
                 type={field.type || "text"}
                 {...register(field.name)}
                 placeholder={`Enter ${field.label.toLowerCase()}`}
+                disabled={mode === "view"}
+                className={
+                  mode === "view" ? "bg-gray-100 cursor-not-allowed" : ""
+                }
               />
               {getNestedError(field.name) && (
                 <p className="text-red-500 text-sm">
@@ -280,21 +311,32 @@ export default function UserForm() {
             </div>
           ))}
 
-          <div className="col-span-2 flex justify-center mt-6">
-            <button
-              type="submit"
-              className="w-full bg-blue-500 cursor-pointer rounded-xl py-2   hover:bg-blue-600 text-white"
+          <div className="col-span-2 flex justify-center gap-4 mt-6">
+            {mode !== "view" && (
+              <button
+                type="submit"
+                className="w-full bg-blue-500 cursor-pointer rounded-xl py-2 hover:bg-blue-600 text-white"
+              >
+                {mode === "edit" ? "Update User" : "Register User"}
+              </button>
+            )}
+            <Link
+              to={mode === "create" ? "/" : "/users"}
+              className="w-full bg-gray-500 text-center cursor-pointer rounded-xl py-2 hover:bg-gray-600 text-white"
             >
-              Register
-            </button>
+              {mode === "view" ? "Back to List" : "Cancel"}
+            </Link>
           </div>
         </form>
       </div>
 
       <div className="absolute top-5 left-6 flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-500 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-md tracking-tight font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105">
-        <Link to="/" className="text-md flex items-center justify-center gap-1">
+        <Link
+          to={mode === "create" ? "/" : "/users"}
+          className="text-md flex items-center justify-center gap-1"
+        >
           <IoIosArrowRoundBack className="text-2xl" />
-          Go Back
+          {mode === "view" ? "Back to List" : "Go Back"}
         </Link>
       </div>
     </div>
