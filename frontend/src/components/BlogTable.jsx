@@ -568,7 +568,7 @@ export default function BlogTable({ searchQuery = "" }) {
         </Box>
       </Popover>
 
-      <Header title="Blog" path="/blogs/create" />
+      <Header title="Blog" path="/blogs/create"   />
       <Box className="p-2 rounded-xl" sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
           <BlogTableToolbar

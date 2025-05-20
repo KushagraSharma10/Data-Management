@@ -125,7 +125,7 @@ UserTableHead.propTypes = {
 
 function UserTableToolbar({ numSelected, selected, onDelete }) {
   const selectedUserId = selected.length > 0 ? selected[0] : null;
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handleDelete = async () => {
     if (!selectedUserId) return;
@@ -314,7 +314,7 @@ export default function UserTable() {
 
   return (
     <div className="p-10">
-      <Header  searchQuery = {searchQuery} setSearchQuery = {setSearchQuery} title="User" path = "/user/create" />
+      <Header  searchQuery = {searchQuery} setSearchQuery = {setSearchQuery} title="User" path = "/users/create" />
        <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>
         <UserTableToolbar numSelected={selected.length} selected = {selected} />

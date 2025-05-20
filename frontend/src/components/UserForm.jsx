@@ -170,11 +170,16 @@ export default function UserForm({ mode = "create" }) {
     }
   };
 
-  if (isLoading) return <CircularProgress />;
-
   if (isLoading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <CircularProgress size={60} />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-100 to-blue-200">
+      <div className="flex flex-col items-center gap-4">
+        <CircularProgress size={60} />
+        <p className="text-lg font-medium text-gray-700">
+          {mode === "view" ? "Loading user details..." : 
+           mode === "edit" ? "Loading user data for editing..." : 
+           "Preparing registration form..."}
+        </p>
+      </div>
     </div>
   );
   
