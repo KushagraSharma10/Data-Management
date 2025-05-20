@@ -16,6 +16,14 @@ import {
   Typography,
   Paper,
   Checkbox,
+  Popover,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio,
+  FormControlLabel,
+  FormGroup,
+  CircularProgress,
   IconButton,
   Tooltip,
   Button,
@@ -108,7 +116,7 @@ BlogTableHead.propTypes = {
   onSelectAllClick: PropTypes.func.isRequired,
 };
 
-function BlogTableToolbar({ selected }) {
+function BlogTableToolbar({ selected, handleFilterClick }) {
   return (
     <Toolbar
       sx={{
@@ -132,7 +140,10 @@ function BlogTableToolbar({ selected }) {
         >
           Blogs
         </Typography>
-        <IoFilter className="text-2xl cursor-pointer" />
+        <IoFilter
+          className="text-2xl cursor-pointer"
+          onClick={handleFilterClick}
+        />
       </div>
     </Toolbar>
   );
@@ -140,6 +151,7 @@ function BlogTableToolbar({ selected }) {
 
 BlogTableToolbar.propTypes = {
   selected: PropTypes.array.isRequired,
+  handleFilterClick: PropTypes.func.isRequired,
 };
 
 export default function BlogTable({ searchQuery = "" }) {
@@ -149,8 +161,55 @@ export default function BlogTable({ searchQuery = "" }) {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [blogs, setBlogs] = React.useState([]);
+  const [filterAnchorEl, setFilterAnchorEl] = React.useState(null);
+  const [allTags, setAllTags] = React.useState([]);
+  const [allCategories, setAllCategories] = React.useState([]);
+  const [selectedTags, setSelectedTags] = React.useState([]);
+  const [selectedCategory, setSelectedCategory] = React.useState("");
 
   const isSelected = (id) => selected.indexOf(id) !== -1;
+
+  const handleFilterClick = (event) => {
+    setFilterAnchorEl(event.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+  };
+
+  const open = Boolean(filterAnchorEl);
+  const id = open ? "filter-popover" : undefined;
+
+  const handleTagChange = (tag) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
+  };
+
+  const handleClearFilters = () => {
+    setSelectedTags([]);
+    setSelectedCategory("");
+  };
+
+  useEffect(() => {
+    const fetchFilters = async () => {
+      try {
+        const [tagsRes, categoryRes] = await Promise.all([
+          axios.get("http://localhost:3000/tags"),
+          axios.get("http://localhost:3000/categories"),
+        ]);
+        setAllTags(tagsRes.data);
+        setAllCategories(categoryRes.data);
+      } catch (err) {
+        console.error("Failed to fetch tags or categories:", err);
+      }
+    };
+    fetchFilters();
+  }, []);
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
@@ -222,9 +281,24 @@ export default function BlogTable({ searchQuery = "" }) {
   const visibleRows = React.useMemo(
     () =>
       [...blogs]
-        .filter((blog) =>
-          blog.title.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        .filter((blog) => {
+          const matchesTitle = blog.title
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
+          const matchesCategory =
+            !selectedCategory || blog.category === selectedCategory;
+          const blogTags = (() => {
+            try {
+              return JSON.parse(blog.tags);
+            } catch {
+              return [];
+            }
+          })();
+          const matchesTags =
+            selectedTags.length === 0 ||
+            selectedTags.every((tag) => blogTags.includes(tag));
+          return matchesTitle && matchesCategory && matchesTags;
+        })
         .sort(getComparator(order, orderBy))
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
         .map((blog, index) => ({
@@ -277,10 +351,82 @@ export default function BlogTable({ searchQuery = "" }) {
 
   return (
     <div className="py-10 px-4">
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={filterAnchorEl}
+        onClose={handleFilterClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <Box sx={{ p: 2, width: 250 }}>
+          <Typography variant="subtitle1">Filter By Category</Typography>
+          <FormControl component="fieldset">
+            <RadioGroup
+              value={selectedCategory}
+              onChange={handleCategoryChange}
+            >
+              {allCategories.map((cat) => (
+                <FormControlLabel
+                  key={cat._id}
+                  value={cat.name}
+                  control={<Radio />}
+                  label={cat.name}
+                />
+              ))}
+            </RadioGroup>
+          </FormControl>
+
+          <Typography variant="subtitle1" sx={{ mt: 2 }}>
+            Filter By Tags
+          </Typography>
+          <FormGroup>
+            {allTags.length === 0 ? (
+              <CircularProgress size={20} />
+            ) : (
+              allTags.map((tag) => (
+                <FormControlLabel
+                  key={tag._id}
+                  control={
+                    <Checkbox
+                      checked={selectedTags.includes(tag.name)}
+                      onChange={() => handleTagChange(tag.name)}
+                    />
+                  }
+                  label={tag.tagName}
+                />
+              ))
+            )}
+          </FormGroup>
+
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between" }}>
+            <Button size="small" onClick={handleClearFilters}>
+              Clear
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={handleFilterClose}
+            >
+              Apply
+            </Button>
+          </Box>
+        </Box>
+      </Popover>
+
       <Header title="Blog" path="/blogs/create" />
       <Box className="p-2 rounded-xl" sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
-          <BlogTableToolbar selected={selected} />
+          <BlogTableToolbar
+            selected={selected}
+            handleFilterClick={handleFilterClick}
+          />
           <TableContainer>
             <Table sx={{ minWidth: 750 }}>
               <BlogTableHead
@@ -313,7 +459,7 @@ export default function BlogTable({ searchQuery = "" }) {
                     <TableCell>{row.category}</TableCell>{" "}
                     {/* ➕ category cell */}
                     <TableCell>
-                    {row.tags.length ? row.tags.join(", ") : "—"}
+                      {row.tags.length ? row.tags.join(", ") : "—"}
                     </TableCell>{" "}
                     {/* ➕ tags cell */}
                     <TableCell>{row.createdAt}</TableCell>
