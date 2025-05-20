@@ -155,7 +155,7 @@ BlogTableToolbar.propTypes = {
   handleFilterClick: PropTypes.func.isRequired,
 };
 
-export default function BlogTable({ searchQuery = "" }) {
+export default function BlogTable() {
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("createdAt");
   const [selected, setSelected] = React.useState([]);
@@ -169,6 +169,7 @@ export default function BlogTable({ searchQuery = "" }) {
   const [selectedCategory, setSelectedCategory] = React.useState([]);
   const [appliedTags, setAppliedTags] = React.useState([]);
   const [appliedCategories, setAppliedCategories] = React.useState([]);
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   // In the filter popover, use local states that only get applied when user clicks "Apply"
   const [tempSelectedTags, setTempSelectedTags] = React.useState([]);
@@ -291,32 +292,39 @@ export default function BlogTable({ searchQuery = "" }) {
       [...blogs]
         .filter((blog) => {
           const searchLower = searchQuery.toLowerCase();
-          
+
+          console.log("Searching:", {
+            title: blog.title,
+            searchQuery,
+            matches: blog.title.toLowerCase().includes(searchLower)
+          });
+
           // Search across multiple fields
-          const matchesSearch = 
+          const matchesSearch =
             blog.title.toLowerCase().includes(searchLower) ||
             blog.description.toLowerCase().includes(searchLower) ||
             blog.author.toLowerCase().includes(searchLower) ||
             blog.category.toLowerCase().includes(searchLower) ||
-            (Array.isArray(blog.tags) && 
-              blog.tags.some(tag => tag.toLowerCase().includes(searchLower)));
-  
+            (Array.isArray(blog.tags) &&
+              blog.tags.some((tag) => tag.toLowerCase().includes(searchLower)));
+
           const matchesCategory =
             appliedCategories.length === 0 ||
             appliedCategories.includes(blog.category);
-  
+
           let blogTags = [];
           try {
-            blogTags = typeof blog.tags === "string" ? JSON.parse(blog.tags) : blog.tags;
+            blogTags =
+              typeof blog.tags === "string" ? JSON.parse(blog.tags) : blog.tags;
             if (!Array.isArray(blogTags)) blogTags = [];
           } catch {
             blogTags = [];
           }
-  
+
           const matchesTags =
             appliedTags.length === 0 ||
-            appliedTags.some(tag => blogTags.includes(tag));
-  
+            appliedTags.some((tag) => blogTags.includes(tag));
+
           return matchesSearch && matchesCategory && matchesTags;
         })
         .sort(getComparator(order, orderBy))
@@ -328,13 +336,15 @@ export default function BlogTable({ searchQuery = "" }) {
           description: blog.description,
           author: blog.author,
           category: blog.category,
-          tags: Array.isArray(blog.tags) ? blog.tags : (() => {
-            try {
-              return JSON.parse(blog.tags);
-            } catch {
-              return [];
-            }
-          })(),
+          tags: Array.isArray(blog.tags)
+            ? blog.tags
+            : (() => {
+                try {
+                  return JSON.parse(blog.tags);
+                } catch {
+                  return [];
+                }
+              })(),
           createdAt: new Date(blog.createdAt).toLocaleDateString("en-GB"),
           updatedAt: new Date(blog.updatedAt).toLocaleDateString("en-GB"),
         })),
@@ -351,27 +361,34 @@ export default function BlogTable({ searchQuery = "" }) {
   );
 
   const totalFiltered = blogs.filter((blog) => {
-    const matchesTitle = blog.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    const searchLower = searchQuery.toLowerCase();
+
+    const matchesSearch =
+      blog.title.toLowerCase().includes(searchLower) ||
+      blog.description.toLowerCase().includes(searchLower) ||
+      blog.author.toLowerCase().includes(searchLower) ||
+      blog.category.toLowerCase().includes(searchLower) ||
+      (Array.isArray(blog.tags) &&
+        blog.tags.some((tag) => tag.toLowerCase().includes(searchLower)));
 
     const matchesCategory =
       appliedCategories.length === 0 ||
       appliedCategories.includes(blog.category);
 
-    const blogTags = (() => {
-      try {
-        return JSON.parse(blog.tags);
-      } catch {
-        return [];
-      }
-    })();
+    let blogTags = [];
+    try {
+      blogTags =
+        typeof blog.tags === "string" ? JSON.parse(blog.tags) : blog.tags;
+      if (!Array.isArray(blogTags)) blogTags = [];
+    } catch {
+      blogTags = [];
+    }
 
     const matchesTags =
       appliedTags.length === 0 ||
-      appliedTags.every((tag) => blogTags.includes(tag));
+      appliedTags.some((tag) => blogTags.includes(tag));
 
-    return matchesTitle && matchesCategory && matchesTags;
+    return matchesSearch && matchesCategory && matchesTags;
   });
 
   const handleDelete = async (id) => {
@@ -571,7 +588,12 @@ export default function BlogTable({ searchQuery = "" }) {
         </Box>
       </Popover>
 
-      <Header title="Blog" path="/blogs/create"   />
+      <Header
+        title="Blog"
+        path="/blogs/create"
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
       <Box className="p-2 rounded-xl" sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
           <BlogTableToolbar
