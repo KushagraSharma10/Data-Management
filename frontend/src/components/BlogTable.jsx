@@ -290,29 +290,34 @@ export default function BlogTable({ searchQuery = "" }) {
     () =>
       [...blogs]
         .filter((blog) => {
-          const matchesTitle = blog.title
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase());
-
+          const searchLower = searchQuery.toLowerCase();
+          
+          // Search across multiple fields
+          const matchesSearch = 
+            blog.title.toLowerCase().includes(searchLower) ||
+            blog.description.toLowerCase().includes(searchLower) ||
+            blog.author.toLowerCase().includes(searchLower) ||
+            blog.category.toLowerCase().includes(searchLower) ||
+            (Array.isArray(blog.tags) && 
+              blog.tags.some(tag => tag.toLowerCase().includes(searchLower)));
+  
           const matchesCategory =
             appliedCategories.length === 0 ||
             appliedCategories.includes(blog.category);
-
-          // Improved tag parsing logic
+  
           let blogTags = [];
           try {
-            blogTags =
-              typeof blog.tags === "string" ? JSON.parse(blog.tags) : blog.tags;
+            blogTags = typeof blog.tags === "string" ? JSON.parse(blog.tags) : blog.tags;
             if (!Array.isArray(blogTags)) blogTags = [];
           } catch {
             blogTags = [];
           }
-
+  
           const matchesTags =
             appliedTags.length === 0 ||
-            appliedTags.some((tag) => blogTags.includes(tag)); // Changed from every() to some()
-
-          return matchesTitle && matchesCategory && matchesTags;
+            appliedTags.some(tag => blogTags.includes(tag));
+  
+          return matchesSearch && matchesCategory && matchesTags;
         })
         .sort(getComparator(order, orderBy))
         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -323,11 +328,9 @@ export default function BlogTable({ searchQuery = "" }) {
           description: blog.description,
           author: blog.author,
           category: blog.category,
-          tags: (() => {
+          tags: Array.isArray(blog.tags) ? blog.tags : (() => {
             try {
-              return typeof blog.tags === "string"
-                ? JSON.parse(blog.tags)
-                : blog.tags;
+              return JSON.parse(blog.tags);
             } catch {
               return [];
             }
