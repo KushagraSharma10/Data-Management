@@ -168,12 +168,10 @@ export default function BlogTable({ searchQuery = "" }) {
   const [selectedCategory, setSelectedCategory] = React.useState([]);
   const [appliedTags, setAppliedTags] = React.useState([]);
   const [appliedCategories, setAppliedCategories] = React.useState([]);
-
-  // These are temporary filters inside the filter popover
+  
+  // In the filter popover, use local states that only get applied when user clicks "Apply"
   const [tempSelectedTags, setTempSelectedTags] = React.useState([]);
-  const [tempSelectedCategories, setTempSelectedCategories] = React.useState(
-    []
-  );
+  const [tempSelectedCategories, setTempSelectedCategories] = React.useState([]);
 
   const isSelected = (id) => selected.indexOf(id) !== -1;
 
@@ -202,6 +200,7 @@ export default function BlogTable({ searchQuery = "" }) {
     setTempSelectedCategories([]);
     setAppliedTags([]);
     setAppliedCategories([]);
+    setPage(0); // Reset to first page when filters are cleared
   };
   
 
@@ -214,8 +213,8 @@ export default function BlogTable({ searchQuery = "" }) {
         ]);
         setAllTags(tagsRes.data);
         setAllCategories(categoryRes.data);
-
-        // Initialize temp selections to applied filters or empty
+        
+        // Initialize temp selections to currently applied filters
         setTempSelectedTags(appliedTags);
         setTempSelectedCategories(appliedCategories);
       } catch (err) {
@@ -223,7 +222,8 @@ export default function BlogTable({ searchQuery = "" }) {
       }
     };
     fetchFilters();
-  }, []);
+  }, [appliedTags, appliedCategories]); // Add dependencies
+  
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
@@ -257,6 +257,7 @@ export default function BlogTable({ searchQuery = "" }) {
   const handleApplyFilters = () => {
     setAppliedTags(tempSelectedTags);
     setAppliedCategories(tempSelectedCategories);
+    setPage(0); // Reset to first page when filters change
     handleFilterClose();
   };
 
@@ -306,23 +307,22 @@ export default function BlogTable({ searchQuery = "" }) {
             .toLowerCase()
             .includes(searchQuery.toLowerCase());
   
-          // Use appliedCategories, not selectedCategory
           const matchesCategory =
             appliedCategories.length === 0 ||
             appliedCategories.includes(blog.category);
   
-          const blogTags = (() => {
-            try {
-              return JSON.parse(blog.tags);
-            } catch {
-              return [];
-            }
-          })();
+          // Improved tag parsing logic
+          let blogTags = [];
+          try {
+            blogTags = typeof blog.tags === 'string' ? JSON.parse(blog.tags) : blog.tags;
+            if (!Array.isArray(blogTags)) blogTags = [];
+          } catch {
+            blogTags = [];
+          }
   
-          // Use appliedTags, not selectedTags
           const matchesTags =
             appliedTags.length === 0 ||
-            appliedTags.every((tag) => blogTags.includes(tag));
+            appliedTags.some(tag => blogTags.includes(tag)); // Changed from every() to some()
   
           return matchesTitle && matchesCategory && matchesTags;
         })
@@ -337,7 +337,7 @@ export default function BlogTable({ searchQuery = "" }) {
           category: blog.category,
           tags: (() => {
             try {
-              return JSON.parse(blog.tags);
+              return typeof blog.tags === 'string' ? JSON.parse(blog.tags) : blog.tags;
             } catch {
               return [];
             }
@@ -352,8 +352,8 @@ export default function BlogTable({ searchQuery = "" }) {
       page,
       rowsPerPage,
       searchQuery,
-      appliedTags,        // changed here
-      appliedCategories,  // changed here
+      appliedTags,
+      appliedCategories,
     ]
   );
 
@@ -539,7 +539,7 @@ export default function BlogTable({ searchQuery = "" }) {
                     <TableCell>{row.category}</TableCell>{" "}
                     {/* ➕ category cell */}
                     <TableCell>
-                      {row.tags.length ? row.tags.join(", ") : "—"}
+                    {row.tags.length ? row.tags.join(", ") : "—"}
                     </TableCell>{" "}
                     {/* ➕ tags cell */}
                     <TableCell>{row.createdAt}</TableCell>
