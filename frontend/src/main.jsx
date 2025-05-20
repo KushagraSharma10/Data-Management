@@ -10,6 +10,8 @@ import UserForm from "./components/UserForm.jsx";
 import BlogTable from "./components/BlogTable";
 import BlogForm from "./components/BlogForm";
 import UserTable from "./components/UserTable";
+import CategoriesTable from "./components/CategoriesTable";
+import TagsTable from "./components/TagsTable";
 
 let router = createBrowserRouter([
   {
@@ -48,6 +50,14 @@ let router = createBrowserRouter([
     path: "/blogs/view/:blogId",
     element: <BlogForm mode="view" />,
   },
+  {
+    path: "/categories",
+    element: <CategoriesTable />,
+  },
+  {
+    path:"/tags",
+    element: <TagsTable />,
+  }
 ]);
 
 createRoot(document.getElementById("root")).render(

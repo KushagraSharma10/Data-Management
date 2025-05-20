@@ -34,63 +34,34 @@ const CategoriesTable = () => {
   }, []);
 
   return (
-    <div className="p-6">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-          Categories List
-        </Typography>
-        <Button 
-          component={Link} 
-          to="/" 
-          variant="contained" 
-          startIcon={<IoArrowBack />}
-          sx={{
-            bgcolor: 'primary.main',
-            '&:hover': { bgcolor: 'primary.dark' }
-          }}
-        >
-          Back to Dashboard
-        </Button>
-      </Box>
-
-      <TableContainer component={Paper} elevation={3} sx={{ borderRadius: 2 }}>
-        <Table sx={{ minWidth: 650 }} aria-label="categories table">
-          <TableHead sx={{ bgcolor: 'primary.light' }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>S.No</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Category Name</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={2} align="center">
-                  Loading categories...
-                </TableCell>
-              </TableRow>
-            ) : categories.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={2} align="center">
-                  No categories found
-                </TableCell>
-              </TableRow>
-            ) : (
-              categories.map((category, index) => (
-                <TableRow 
-                  key={category._id}
-                  sx={{ 
-                    '&:nth-of-type(odd)': { bgcolor: 'action.hover' },
-                    '&:last-child td, &:last-child th': { border: 0 }
-                  }}
-                >
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell sx={{ fontWeight: 'medium' }}>{category.categoryName}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-3xl mx-auto bg-white shadow-2xl rounded-xl p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold text-gray-800">Categories List</h1>
+          <Link
+            to="/"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
+          >
+            ← Back
+          </Link>
+        </div>
+        <table className="w-full border border-gray-200 rounded-md overflow-hidden">
+          <thead className="bg-blue-100">
+            <tr>
+              <th className="px-4 py-2 text-left">S.No.</th>
+              <th className="px-4 py-2 text-left">Category Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map((cat, index) => (
+              <tr key={cat._id} className="border-t hover:bg-gray-50">
+                <td className="px-4 py-2">{index + 1}</td>
+                <td className="px-4 py-2 capitalize">{cat.categoryName}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
