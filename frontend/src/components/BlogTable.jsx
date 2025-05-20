@@ -25,6 +25,7 @@ import axios from "axios";
 import { Link } from "react-router"; // Corrected from 'react-router'
 import { useEffect } from "react";
 import Header from "./Header";
+import { IoFilter } from "react-icons/io5";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) return -1;
@@ -43,6 +44,8 @@ const headCells = [
   { id: "title", label: "Title" },
   { id: "description", label: "Description" },
   { id: "author", label: "Author" },
+  { id: "category", label: "Category" }, // ➕ added
+  { id: "tags", label: "Tags" }, // ➕ added
   { id: "createdAt", label: "Created At" },
   { id: "updatedAt", label: "Updated At" },
   { id: "actions", label: "Actions" },
@@ -120,14 +123,17 @@ function BlogTableToolbar({ selected }) {
         }),
       }}
     >
-      <Typography
-        sx={{ flex: "1 1 100%" }}
-        variant="h6"
-        id="tableTitle"
-        component="div"
-      >
-        Blogs
-      </Typography>
+      <div className="flex items-center justify-between w-full px-3">
+        <Typography
+          sx={{ flex: "1 1 100%" }}
+          variant="h6"
+          id="tableTitle"
+          component="div"
+        >
+          Blogs
+        </Typography>
+        <IoFilter className="text-2xl cursor-pointer" />
+      </div>
     </Toolbar>
   );
 }
@@ -201,7 +207,6 @@ export default function BlogTable({ searchQuery = "" }) {
   //   updatedAt: new Date(blog.updatedAt).toLocaleDateString(),
   // }));
 
-
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -228,26 +233,33 @@ export default function BlogTable({ searchQuery = "" }) {
           title: blog.title,
           description: blog.description,
           author: blog.author,
+          category: blog.category, // ➕ added
+          tags: (() => {
+            try {
+              return JSON.parse(blog.tags);
+            } catch {
+              return [];
+            }
+          })(),
           createdAt: new Date(blog.createdAt).toLocaleDateString("en-GB"), // formatted
           updatedAt: new Date(blog.updatedAt).toLocaleDateString("en-GB"),
         })),
     [blogs, order, orderBy, page, rowsPerPage, searchQuery]
   );
-  
+
   const totalFiltered = blogs.filter((blog) =>
     blog.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
-  
-
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm("Are you sure you want to delete this blog?");
+    const confirm = window.confirm(
+      "Are you sure you want to delete this blog?"
+    );
     if (!confirm) return;
-  
+
     try {
       const response = await axios.delete(`http://localhost:3000/blogs/${id}`);
-  
+
       if (response.status === 200) {
         const newSelected = selected.filter((item) => item !== id);
         setSelected(newSelected);
@@ -256,15 +268,16 @@ export default function BlogTable({ searchQuery = "" }) {
         console.error("Delete failed:", response.data.message);
       }
     } catch (error) {
-      console.error("Error deleting blog:", error.response?.data || error.message);
+      console.error(
+        "Error deleting blog:",
+        error.response?.data || error.message
+      );
     }
   };
-  
-  
 
   return (
     <div className="py-10 px-4">
-      <Header title = "Blog" path = "/blogs/create" />
+      <Header title="Blog" path="/blogs/create" />
       <Box className="p-2 rounded-xl" sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
           <BlogTableToolbar selected={selected} />
@@ -297,6 +310,12 @@ export default function BlogTable({ searchQuery = "" }) {
                     <TableCell>{row.title}</TableCell>
                     <TableCell>{row.description}</TableCell>
                     <TableCell>{row.author}</TableCell>
+                    <TableCell>{row.category}</TableCell>{" "}
+                    {/* ➕ category cell */}
+                    <TableCell>
+                    {row.tags.length ? row.tags.join(", ") : "—"}
+                    </TableCell>{" "}
+                    {/* ➕ tags cell */}
                     <TableCell>{row.createdAt}</TableCell>
                     <TableCell>{row.updatedAt}</TableCell>
                     <TableCell>
@@ -319,7 +338,7 @@ export default function BlogTable({ searchQuery = "" }) {
                           variant="outlined"
                           color="error"
                           size="small"
-                          onClick={() =>handleDelete(row.id)}
+                          onClick={() => handleDelete(row.id)}
                         >
                           Delete
                         </Button>

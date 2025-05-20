@@ -437,6 +437,6 @@ fastify.listen({ port: 3000 }, (err, address) => {
     fastify.log.error(err);
     process.exit(1);
   }
-  fastify.log.info(`Server listening at ${address}`);
+  fastify.log.info(`Server listening at http://localhost:3000`);
 });
 
