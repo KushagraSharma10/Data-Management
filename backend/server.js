@@ -202,16 +202,6 @@ fastify.post("/create", async (request, reply) => {
   }
 });
 
-
-fastify.post("/upload/file", async(req,reply)=>{
-  const file = await req.file();
-
-  const path = `${nanoid()}.${data.filename.split('.').pop()}`;
-  await pipeline(data.file, fs.createWriteStream(path))
-  reply.send({data:file ,status:200,message: "File uploaded successfully"})
-})
-
-
 fastify.get("/user/:userId", async (request, reply) => {
   const { userId } = request.params;
   const user = await collection.findOne({
@@ -222,6 +212,73 @@ fastify.get("/user/:userId", async (request, reply) => {
   }
   return reply.status(200).send(user);
 });
+
+// Update User Route
+fastify.put("/user/:userId", async (request, reply) => {
+  const { userId } = request.params;
+  const data = {};
+  let imageFilename = null;
+
+  const parts = request.parts();
+  for await (const part of parts) {
+    if (part.file) {
+      imageFilename = `${Date.now()}-${part.filename}`;
+      const filePath = path.join(uploadDir, imageFilename);
+      await pipeline(part.file, fs.createWriteStream(filePath));
+    } else if (part.fieldname === 'data') {
+      try {
+        Object.assign(data, JSON.parse(part.value));
+      } catch (err) {
+        return reply.status(400).send({ error: "Invalid JSON data" });
+      }
+    }
+  }
+
+  if (imageFilename) {
+    data.image = `http://localhost:3000/uploads/${imageFilename}`;
+  }
+
+  try {
+    const validated = opt.schema.body.validateSync(data, {
+      strict: false,
+      abortEarly: false,
+      stripUnknown: true
+    });
+
+    const result = await collection.updateOne(
+      { _id: new fastify.mongo.ObjectId(userId) },
+      { $set: validated }
+    );
+
+    if (result.modifiedCount === 0) {
+      return reply.status(404).send({ message: "User not found or no changes made" });
+    }
+    return reply.status(200).send({ message: "User updated successfully" });
+  } catch (err) {
+    console.error("Update error:", err);
+    return reply.status(400).send({ errors: err.errors || err.message });
+  }
+});
+
+// Delete User Route
+fastify.delete("/user/:userId", async (request, reply) => {
+  const { userId } = request.params;
+  
+  try {
+    const result = await collection.deleteOne({
+      _id: new fastify.mongo.ObjectId(userId)
+    });
+
+    if (result.deletedCount === 0) {
+      return reply.status(404).send({ message: "User not found" });
+    }
+    return reply.status(200).send({ message: "User deleted successfully" });
+  } catch (err) {
+    console.error("Delete error:", err);
+    return reply.status(500).send({ error: "Internal server error" });
+  }
+});
+
 
 fastify.get("/blogs", async (request, reply) => {
   try {

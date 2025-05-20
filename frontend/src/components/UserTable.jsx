@@ -24,7 +24,7 @@ import { visuallyHidden } from "@mui/utils";
 import { Avatar, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import Header from "./Header";
 
 function descendingComparator(a, b, orderBy) {
@@ -123,9 +123,25 @@ UserTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
-function UserTableToolbar(props) {
-  const { numSelected, selected } = props;
+function UserTableToolbar({ numSelected, selected, onDelete }) {
   const selectedUserId = selected.length > 0 ? selected[0] : null;
+  const navigate = useNavigate();
+
+  const handleDelete = async () => {
+    if (!selectedUserId) return;
+    
+    const confirm = window.confirm("Are you sure you want to delete this user?");
+    if (!confirm) return;
+
+    try {
+      await axios.delete(`http://localhost:3000/user/${selectedUserId}`);
+      onDelete(selectedUserId); // Parent component ko notify karega
+      alert("User deleted successfully");
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Failed to delete user");
+    }
+  };
   return (
     <Toolbar
       sx={[
@@ -162,31 +178,29 @@ function UserTableToolbar(props) {
         </Typography>
       )}
       {numSelected > 0 && (
-        <Tooltip className="flex " title="Delete">
-          <IconButton>
-            <Button variant="contained" disableElevation>
+        <div className="flex gap-2">
+          <Link to={`/users/view/${selectedUserId}`}>
+            <Button variant="contained" color="info">
+              View
+            </Button>
+          </Link>
+          <Link to={`/users/edit/${selectedUserId}`}>
+            <Button variant="contained">
               Edit
             </Button>
-          </IconButton>
-          <IconButton>
-            <Link to={`/user/${selectedUserId}`}>
-              <Button variant="contained" color="success">
-                View
-              </Button>
-            </Link>
-          </IconButton>
-
-          <IconButton>
-            <Button variant="outlined" color="error">
-              Delete
-            </Button>{" "}
-          </IconButton>
-        </Tooltip>
+          </Link>
+          <Button 
+            variant="contained" 
+            color="error"
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
+        </div>
       )}
     </Toolbar>
   );
 }
-
 UserTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
@@ -299,7 +313,7 @@ export default function UserTable() {
   );
 
   return (
-    <div>
+    <div className="p-10">
       <Header  searchQuery = {searchQuery} setSearchQuery = {setSearchQuery} title="User" path = "/user/create" />
        <Box sx={{ width: "100%" }}>
       <Paper sx={{ width: "100%", mb: 2 }}>

@@ -34,7 +34,7 @@ import { Link } from "react-router"; // Corrected from 'react-router'
 import { useEffect } from "react";
 import Header from "./Header";
 import { IoFilter } from "react-icons/io5";
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from "@mui/icons-material/Close";
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) return -1;
@@ -169,10 +169,12 @@ export default function BlogTable({ searchQuery = "" }) {
   const [selectedCategory, setSelectedCategory] = React.useState([]);
   const [appliedTags, setAppliedTags] = React.useState([]);
   const [appliedCategories, setAppliedCategories] = React.useState([]);
-  
+
   // In the filter popover, use local states that only get applied when user clicks "Apply"
   const [tempSelectedTags, setTempSelectedTags] = React.useState([]);
-  const [tempSelectedCategories, setTempSelectedCategories] = React.useState([]);
+  const [tempSelectedCategories, setTempSelectedCategories] = React.useState(
+    []
+  );
 
   const isSelected = (id) => selected.indexOf(id) !== -1;
 
@@ -203,7 +205,6 @@ export default function BlogTable({ searchQuery = "" }) {
     setAppliedCategories([]);
     setPage(0); // Reset to first page when filters are cleared
   };
-  
 
   useEffect(() => {
     const fetchFilters = async () => {
@@ -214,7 +215,7 @@ export default function BlogTable({ searchQuery = "" }) {
         ]);
         setAllTags(tagsRes.data);
         setAllCategories(categoryRes.data);
-        
+
         // Initialize temp selections to currently applied filters
         setTempSelectedTags(appliedTags);
         setTempSelectedCategories(appliedCategories);
@@ -224,7 +225,6 @@ export default function BlogTable({ searchQuery = "" }) {
     };
     fetchFilters();
   }, [appliedTags, appliedCategories]); // Add dependencies
-  
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
@@ -274,20 +274,6 @@ export default function BlogTable({ searchQuery = "" }) {
     fetchBlogs();
   }, []);
 
-  // const filteredRows = blogs
-  // .filter((blog) =>
-  //   blog.title.toLowerCase().includes(searchQuery.toLowerCase())
-  // )
-  // .map((blog, index) => ({
-  //   sno: page * rowsPerPage + index + 1, // ✅ fix S.No
-  //   id: blog._id,
-  //   title: blog.title,
-  //   description: blog.description,
-  //   author: blog.author,
-  //   createdAt: new Date(blog.createdAt).toLocaleDateString(),
-  //   updatedAt: new Date(blog.updatedAt).toLocaleDateString(),
-  // }));
-
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
@@ -307,24 +293,25 @@ export default function BlogTable({ searchQuery = "" }) {
           const matchesTitle = blog.title
             .toLowerCase()
             .includes(searchQuery.toLowerCase());
-  
+
           const matchesCategory =
             appliedCategories.length === 0 ||
             appliedCategories.includes(blog.category);
-  
+
           // Improved tag parsing logic
           let blogTags = [];
           try {
-            blogTags = typeof blog.tags === 'string' ? JSON.parse(blog.tags) : blog.tags;
+            blogTags =
+              typeof blog.tags === "string" ? JSON.parse(blog.tags) : blog.tags;
             if (!Array.isArray(blogTags)) blogTags = [];
           } catch {
             blogTags = [];
           }
-  
+
           const matchesTags =
             appliedTags.length === 0 ||
-            appliedTags.some(tag => blogTags.includes(tag)); // Changed from every() to some()
-  
+            appliedTags.some((tag) => blogTags.includes(tag)); // Changed from every() to some()
+
           return matchesTitle && matchesCategory && matchesTags;
         })
         .sort(getComparator(order, orderBy))
@@ -338,7 +325,9 @@ export default function BlogTable({ searchQuery = "" }) {
           category: blog.category,
           tags: (() => {
             try {
-              return typeof blog.tags === 'string' ? JSON.parse(blog.tags) : blog.tags;
+              return typeof blog.tags === "string"
+                ? JSON.parse(blog.tags)
+                : blog.tags;
             } catch {
               return [];
             }
@@ -358,30 +347,29 @@ export default function BlogTable({ searchQuery = "" }) {
     ]
   );
 
+  const totalFiltered = blogs.filter((blog) => {
+    const matchesTitle = blog.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
 
- const totalFiltered = blogs.filter((blog) => {
-  const matchesTitle = blog.title
-    .toLowerCase()
-    .includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      appliedCategories.length === 0 ||
+      appliedCategories.includes(blog.category);
 
-  const matchesCategory =
-    appliedCategories.length === 0 ||
-    appliedCategories.includes(blog.category);
+    const blogTags = (() => {
+      try {
+        return JSON.parse(blog.tags);
+      } catch {
+        return [];
+      }
+    })();
 
-  const blogTags = (() => {
-    try {
-      return JSON.parse(blog.tags);
-    } catch {
-      return [];
-    }
-  })();
+    const matchesTags =
+      appliedTags.length === 0 ||
+      appliedTags.every((tag) => blogTags.includes(tag));
 
-  const matchesTags =
-    appliedTags.length === 0 ||
-    appliedTags.every((tag) => blogTags.includes(tag));
-
-  return matchesTitle && matchesCategory && matchesTags;
-});
+    return matchesTitle && matchesCategory && matchesTags;
+  });
 
   const handleDelete = async (id) => {
     const confirm = window.confirm(
@@ -417,145 +405,168 @@ export default function BlogTable({ searchQuery = "" }) {
 
   return (
     <div className="py-10 px-4">
-     <Popover
-  id={id}
-  open={open}
-  anchorEl={filterAnchorEl}
-  onClose={handleFilterClose}
-  anchorOrigin={{
-    vertical: "bottom",
-    horizontal: "right",
-  }}
-  transformOrigin={{
-    vertical: "top",
-    horizontal: "right",
-  }}
-  sx={{
-    "& .MuiPaper-root": {
-      borderRadius: "12px",
-      boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
-    },
-  }}
->
-  <Box sx={{ p: 3, width: 300 }}>
-    {/* Header */}
-    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-      <Typography variant="h6" sx={{ fontWeight: 600 }}>
-        Filters
-      </Typography>
-      <IconButton size="small" onClick={handleFilterClose}>
-        <CloseIcon fontSize="small" />
-      </IconButton>
-    </Box>
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={filterAnchorEl}
+        onClose={handleFilterClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        sx={{
+          "& .MuiPaper-root": {
+            borderRadius: "12px",
+            boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.1)",
+          },
+        }}
+      >
+        <Box sx={{ p: 3, width: 300 }}>
+          {/* Header */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Filters
+            </Typography>
+            <IconButton size="small" onClick={handleFilterClose}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
 
-    {/* Category Section */}
-    <Box sx={{ mb: 3 }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1, color: "text.secondary" }}>
-        Categories
-      </Typography>
-      <FormGroup sx={{ maxHeight: 150, overflowY: "auto", pr: 1 }}>
-        {allCategories.map((cat) => (
-          <FormControlLabel
-            key={cat._id}
-            control={
-              <Checkbox
-                size="small"
-                checked={tempSelectedCategories.includes(cat.categoryName)}
-                onChange={() => {
-                  setTempSelectedCategories((prev) =>
-                    prev.includes(cat.categoryName)
-                      ? prev.filter((c) => c !== cat.categoryName)
-                      : [...prev, cat.categoryName]
-                  );
-                }}
-                sx={{ py: 0.5 }}
-              />
-            }
-            label={
-              <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
-                {cat.categoryName}
-              </Typography>
-            }
-            sx={{ my: 0 }}
-          />
-        ))}
-      </FormGroup>
-    </Box>
-
-    {/* Tags Section */}
-    <Box sx={{ mb: 3 }}>
-      <Typography variant="subtitle1" sx={{ fontWeight: 500, mb: 1, color: "text.secondary" }}>
-        Tags
-      </Typography>
-      {allTags.length === 0 ? (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
-          <CircularProgress size={20} />
-        </Box>
-      ) : (
-        <FormGroup sx={{ maxHeight: 150, overflowY: "auto", pr: 1 }}>
-          {allTags.map((tag) => (
-            <FormControlLabel
-              key={tag._id}
-              control={
-                <Checkbox
-                  size="small"
-                  checked={tempSelectedTags.includes(tag.tagName)}
-                  onChange={() => {
-                    setTempSelectedTags((prev) =>
-                      prev.includes(tag.tagName)
-                        ? prev.filter((t) => t !== tag.tagName)
-                        : [...prev, tag.tagName]
-                    );
-                  }}
-                  sx={{ py: 0.5 }}
+          {/* Category Section */}
+          <Box sx={{ mb: 3 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 500, mb: 1, color: "text.secondary" }}
+            >
+              Categories
+            </Typography>
+            <FormGroup sx={{ maxHeight: 150, overflowY: "auto", pr: 1 }}>
+              {allCategories.map((cat) => (
+                <FormControlLabel
+                  key={cat._id}
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={tempSelectedCategories.includes(
+                        cat.categoryName
+                      )}
+                      onChange={() => {
+                        setTempSelectedCategories((prev) =>
+                          prev.includes(cat.categoryName)
+                            ? prev.filter((c) => c !== cat.categoryName)
+                            : [...prev, cat.categoryName]
+                        );
+                      }}
+                      sx={{ py: 0.5 }}
+                    />
+                  }
+                  label={
+                    <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
+                      {cat.categoryName}
+                    </Typography>
+                  }
+                  sx={{ my: 0 }}
                 />
-              }
-              label={
-                <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
-                  {tag.tagName}
-                </Typography>
-              }
-              sx={{ my: 0 }}
-            />
-          ))}
-        </FormGroup>
-      )}
-    </Box>
+              ))}
+            </FormGroup>
+          </Box>
 
-    {/* Action Buttons */}
-    <Box sx={{ display: "flex", justifyContent: "space-between", pt: 1, borderTop: "1px solid", borderColor: "divider" }}>
-      <Button
-        size="small"
-        onClick={handleClearFilters}
-        sx={{
-          textTransform: "none",
-          color: "text.secondary",
-          "&:hover": {
-            backgroundColor: "action.hover",
-          },
-        }}
-      >
-        Clear all
-      </Button>
-      <Button
-        size="small"
-        variant="contained"
-        onClick={handleApplyFilters}
-        sx={{
-          textTransform: "none",
-          px: 2,
-          borderRadius: "6px",
-          boxShadow: "none",
-          "&:hover": {
-            boxShadow: "none",
-          },
-        }}
-      >
-        Apply Filters
-      </Button>
-    </Box>
-  </Box>
-</Popover>
+          {/* Tags Section */}
+          <Box sx={{ mb: 3 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 500, mb: 1, color: "text.secondary" }}
+            >
+              Tags
+            </Typography>
+            {allTags.length === 0 ? (
+              <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+                <CircularProgress size={20} />
+              </Box>
+            ) : (
+              <FormGroup sx={{ maxHeight: 150, overflowY: "auto", pr: 1 }}>
+                {allTags.map((tag) => (
+                  <FormControlLabel
+                    key={tag._id}
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={tempSelectedTags.includes(tag.tagName)}
+                        onChange={() => {
+                          setTempSelectedTags((prev) =>
+                            prev.includes(tag.tagName)
+                              ? prev.filter((t) => t !== tag.tagName)
+                              : [...prev, tag.tagName]
+                          );
+                        }}
+                        sx={{ py: 0.5 }}
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" sx={{ fontSize: "0.875rem" }}>
+                        {tag.tagName}
+                      </Typography>
+                    }
+                    sx={{ my: 0 }}
+                  />
+                ))}
+              </FormGroup>
+            )}
+          </Box>
+
+          {/* Action Buttons */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              pt: 1,
+              borderTop: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Button
+              size="small"
+              onClick={handleClearFilters}
+              sx={{
+                textTransform: "none",
+                color: "text.secondary",
+                "&:hover": {
+                  backgroundColor: "action.hover",
+                },
+              }}
+            >
+              Clear all
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={handleApplyFilters}
+              sx={{
+                textTransform: "none",
+                px: 2,
+                borderRadius: "6px",
+                boxShadow: "none",
+                "&:hover": {
+                  boxShadow: "none",
+                },
+              }}
+            >
+              Apply Filters
+            </Button>
+          </Box>
+        </Box>
+      </Popover>
 
       <Header title="Blog" path="/blogs/create" />
       <Box className="p-2 rounded-xl" sx={{ width: "100%" }}>
@@ -596,7 +607,7 @@ export default function BlogTable({ searchQuery = "" }) {
                     <TableCell>{row.category}</TableCell>{" "}
                     {/* ➕ category cell */}
                     <TableCell>
-                    {row.tags.length ? row.tags.join(", ") : "—"}
+                      {row.tags.length ? row.tags.join(", ") : "—"}
                     </TableCell>{" "}
                     {/* ➕ tags cell */}
                     <TableCell>{row.createdAt}</TableCell>

@@ -335,9 +335,8 @@ export default function BlogForm({ mode = "create" }) {
   )}
 />
 
-
-        {/* Category - Single Select */}
-        <Controller
+{/* Category - Single Select */}
+<Controller
   name="category"
   control={control}
   rules={{ required: "Category is required" }}

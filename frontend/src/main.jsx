@@ -9,6 +9,7 @@ import App from "./App.jsx";
 import UserForm from "./components/UserForm.jsx";
 import BlogTable from "./components/BlogTable";
 import BlogForm from "./components/BlogForm";
+import UserTable from "./components/UserTable";
 
 let router = createBrowserRouter([
   {
@@ -16,12 +17,20 @@ let router = createBrowserRouter([
     element: <App />,
   },
   {
-    path: "/user/create",
-    element: <UserForm />,
+    path: "/users",  
+    element: <UserTable />,
   },
   {
-    path: "/user/:userId",
-    element: <UserForm />,
+    path: "/users/create",
+    element: <UserForm mode="create" />,
+  },
+  {
+    path: "/users/view/:userId",
+    element: <UserForm mode="view" />,
+  },
+  {
+    path: "/users/edit/:userId",
+    element: <UserForm mode="edit" />,
   },
   {
     path: "/blogs",
