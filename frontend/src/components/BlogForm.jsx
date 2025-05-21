@@ -40,27 +40,66 @@ export default function BlogForm({ mode = "create" }) {
 
   useEffect(() => {
     if ((mode === "edit" || mode === "view") && blogId) {
-      axios.get(`http://localhost:3000/blogs/${blogId}`).then((res) => {
-        const { title, description, author, image, category, tags } = res.data;
-        setValue("title", title);
-        setValue("description", description);
-        setValue("author", author);
-        setValue("category", category); 
-        setValue("tags", tags || []);
-        setPreview(image);
+      // Fetch blog data first
+      axios.get(`http://localhost:3000/blogs/${blogId}`).then((blogRes) => {
+        // Then fetch all dependent data
+        Promise.all([
+          axios.get("http://localhost:3000/"),
+          axios.get("http://localhost:3000/tags"),
+          axios.get("http://localhost:3000/categories"),
+        ]).then(([usersRes, tagsRes, categoriesRes]) => {
+          const blogData = blogRes.data;
+          const allUsers = usersRes.data;
+          const allTags = tagsRes.data;
+          const allCategories = categoriesRes.data;
 
-        if (mode === "edit") {
-          axios
-            .get(`http://localhost:3000/users?name=${author}`)
-            .then((userRes) => {
-              if (userRes.data.length > 0) {
-                setValue("userId", userRes.data[0]._id);
-              }
-            });
-        }
+          
+
+          console.log("Blog Author ID:", blogData.author);
+          console.log("All Users:", allUsers);
+
+          // Find author details
+          const authorUser = allUsers.find((u) => u._id === blogData.author);
+          const authorName = authorUser ? 
+          `${authorUser.firstName} ${authorUser.lastName}` : 'Unknown Author';
+
+          console.log('Author Match:', {
+            blogAuthorId: blogData.author,
+            users: allUsers.map(u => ({ id: u._id, name: `${u.firstName} ${u.lastName}` })),
+            foundAuthor: authorUser
+          });
+
+
+          // Map tags to tagNames
+          let blogTags = [];
+          try {
+            // Handle both stringified array and proper array formats
+            const rawTags = typeof blogData.tags === 'string' 
+              ? JSON.parse(blogData.tags) 
+              : blogData.tags;
+            
+            blogTags = rawTags.map(tag => 
+              allTags.find(t => t.tagName === tag)?.tagName || tag
+            );
+          } catch(e) {
+            blogTags = [];
+          }
+
+          // Set form values
+          reset({
+            title: blogData.title,
+            description: blogData.description,
+            author: authorName,
+            category: blogData.category,
+            tags: blogTags || [],
+            image: blogData.image,
+          });
+
+          setPreview(blogData.image);
+        });
       });
     }
-  }, [mode, blogId, setValue]);
+  }, [mode, blogId, reset]);
 
   const onSubmit = async (data) => {
     const formData = new FormData();
@@ -240,7 +279,7 @@ export default function BlogForm({ mode = "create" }) {
           </div>
         )}
         {!isReadOnly && <input type="hidden" {...register("userId")} />}
-        
+
         <TextField
           label="Blog Title"
           variant="outlined"
@@ -327,34 +366,34 @@ export default function BlogForm({ mode = "create" }) {
             </MenuItem>
           ))}
         </TextField> */}
-        <Controller
-          name="author"
-          control={control}
-          rules={{ required: "Author is required" }}
-          render={({ field }) => (
-            <TextField
-              select
-              label="Select Author"
-              fullWidth
-              {...field}
-              error={!!errors.author}
-              helperText={errors.author?.message}
-              disabled={isReadOnly || mode === "edit"}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            >
-              {users.map((user) => (
-                <MenuItem
-                  key={user._id}
-                  value={`${user.firstName} ${user.lastName}`}
-                >
-                  {user.firstName} {user.lastName}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-        />
+       <Controller
+  name="author"
+  control={control}
+  rules={{ required: "Author is required" }}
+  render={({ field }) => (
+    <TextField
+      select
+      label="Select Author"
+      fullWidth
+      value={field.value || ""}
+      onChange={field.onChange}
+      error={!!errors.author}
+      helperText={errors.author?.message}
+      disabled={isReadOnly || mode === "edit"}
+      InputLabelProps={{ shrink: true }}
+    >
+      {users.map((user) => (
+        <MenuItem
+          key={user._id}
+          value={`${user.firstName} ${user.lastName}`} // Must match reset value
+        >
+          {user.firstName} {user.lastName}
+        </MenuItem>
+      ))}
+    </TextField>
+  )}
+/>
+
         {/* Category - Single Select */}
         <Controller
           name="category"
@@ -387,20 +426,18 @@ export default function BlogForm({ mode = "create" }) {
           name="tags"
           control={control}
           rules={{ required: "At least one tag is required" }}
-          InputLabelProps={{
-            shrink: true,
-          }}
           render={({ field }) => (
             <TextField
               select
               label="Select Tags"
-              defaultValue={[]}
+              value={Array.isArray(field.value) ? field.value : []}
+              onChange={field.onChange}
               fullWidth
               SelectProps={{ multiple: true }}
-              {...field}
               error={!!errors.tags}
               helperText={errors.tags?.message}
               disabled={isReadOnly}
+              InputLabelProps={{ shrink: true }}
             >
               {tags.map((tag) => (
                 <MenuItem key={tag._id} value={tag.tagName}>
