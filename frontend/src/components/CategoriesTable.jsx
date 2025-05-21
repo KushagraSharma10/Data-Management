@@ -7,18 +7,20 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
+  Select,
+  MenuItem,
   Button,
-  Typography,
-  Box,
+  Paper,
 } from "@mui/material";
-import { IoArrowBack } from "react-icons/io5";
 import axios from "axios";
 import Header from "./Header";
 
 const CategoriesTable = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -34,6 +36,24 @@ const CategoriesTable = () => {
     fetchCategories();
   }, []);
 
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const paginatedCategories = categories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <Header title="Category" path="/category/create" />
@@ -47,6 +67,10 @@ const CategoriesTable = () => {
             ← Back
           </Link>
         </div>
+
+        {/* Dropdown for items per page */}
+
+        {/* Table */}
         <table className="w-full border border-gray-200 rounded-md overflow-hidden">
           <thead className="bg-blue-100">
             <tr>
@@ -55,14 +79,84 @@ const CategoriesTable = () => {
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat, index) => (
+            {paginatedCategories.map((cat, index) => (
               <tr key={cat._id} className="border-t hover:bg-gray-50">
-                <td className="px-4 py-2">{index + 1}</td>
+                <td className="px-4 py-2">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </td>
                 <td className="px-4 py-2 capitalize">{cat.categoryName}</td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="mr-2 font-medium">Items per page:</label>
+              <Select
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                size="small"
+                className="bg-white"
+              >
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={15}>15</MenuItem>
+              </Select>
+            </div>
+          </div>
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center">
+            <div />
+            <div className="flex gap-2">
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+              >
+                First
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Prev
+              </Button>
+
+              {Array.from({ length: totalPages }, (_, i) => (
+                <Button
+                  key={i + 1}
+                  variant={currentPage === i + 1 ? "contained" : "outlined"}
+                  size="small"
+                  onClick={() => handlePageChange(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
