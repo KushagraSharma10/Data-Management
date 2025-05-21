@@ -18,6 +18,16 @@ const TagsTable = () => {
       .catch(err => console.error('Error:', err));
   }, []);
 
+  const handleDelete = (tagId) => {
+    if (window.confirm('Are you sure you want to delete this tag?')) {
+      axios.delete(`http://localhost:3000/tags/${tagId}`)
+        .then(() => {
+          setTags(tags.filter(tag => tag._id !== tagId));
+        })
+        .catch(err => console.error('Error deleting tag:', err));
+    }
+  };
+
   const totalPages = Math.ceil(tags.length / itemsPerPage);
 
   const handleItemsPerPageChange = (e) => {
@@ -53,6 +63,7 @@ const TagsTable = () => {
             <tr>
               <th className="px-4 py-2 text-left">S.No.</th>
               <th className="px-4 py-2 text-left">Tag Name</th>
+              <th className="px-4 py-2 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -60,82 +71,104 @@ const TagsTable = () => {
               <tr key={tag._id} className="border-t hover:bg-gray-50">
                 <td className="px-4 py-2">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                 <td className="px-4 py-2 capitalize">{tag.tagName}</td>
+                <td className="px-4 py-2">
+                  <div className="flex gap-2">
+                    <Link
+                      to={`/tags/${tag._id}`}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors"
+                    >
+                      View
+                    </Link>
+                    <Link
+                      to={`/tags/edit/${tag._id}`}
+                      className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded transition-colors"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(tag._id)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
 
-       <div className='flex items-center justify-end gap-4 mt-4'>
-        <div className="flex items-center justify-between ">
-          <div>
-            <label className="mr-2 font-medium">Items per page:</label>
-            <Select
-              value={itemsPerPage}
-              onChange={handleItemsPerPageChange}
-              size="small"
-              variant="outlined"
-              sx={{ minWidth: 60, backgroundColor: 'white' }}
-              className="bg-white"
-            >
-              <MenuItem value={5}>5</MenuItem>
-              <MenuItem value={10}>10</MenuItem>
-              <MenuItem value={15}>15</MenuItem>
-            </Select>
-          </div>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="flex justify-between items-center">
-          <div />
-          <div className="flex gap-2">
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-            >
-              First
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              Prev
-            </Button>
-
-            {/* Page Numbers */}
-            {Array.from({ length: totalPages }, (_, i) => (
-              <Button
-                key={i + 1}
-                variant={currentPage === i + 1 ? 'contained' : 'outlined'}
+        <div className='flex items-center justify-end gap-4 mt-4'>
+          <div className="flex items-center justify-between ">
+            <div>
+              <label className="mr-2 font-medium">Items per page:</label>
+              <Select
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
                 size="small"
-                onClick={() => handlePageChange(i + 1)}
+                variant="outlined"
+                sx={{ minWidth: 60, backgroundColor: 'white' }}
+                className="bg-white"
               >
-                {i + 1}
-              </Button>
-            ))}
+                <MenuItem value={5}>5</MenuItem>
+                <MenuItem value={10}>10</MenuItem>
+                <MenuItem value={15}>15</MenuItem>
+              </Select>
+            </div>
+          </div>
 
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              Last
-            </Button>
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center">
+            <div />
+            <div className="flex gap-2">
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+              >
+                First
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Prev
+              </Button>
+
+              {/* Page Numbers */}
+              {Array.from({ length: totalPages }, (_, i) => (
+                <Button
+                  key={i + 1}
+                  variant={currentPage === i + 1 ? 'contained' : 'outlined'}
+                  size="small"
+                  onClick={() => handlePageChange(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+              >
+                Last
+              </Button>
+            </div>
           </div>
         </div>
-       </div>
       </div>
     </div>
   );

@@ -596,6 +596,49 @@ fastify.get("/tags/:tagId", async (request, reply) => {
   }
 })
 
+fastify.put("/tags/:tagId", async (request, reply) => {
+  const { tagId } = request.params;
+  const { tagName } = request.body;
+
+  if (!tagName) {
+    return reply.status(400).send({ message: "Tag name is required" });
+  }
+
+  try {
+    const result = await tagCollection.updateOne(
+      { _id: new fastify.mongo.ObjectId(tagId) },
+      { $set: { tagName } }
+    );
+
+    if (result.matchedCount === 0) {
+      return reply.status(404).send({ message: "Tag not found" });
+    }
+
+    return reply.status(200).send({ message: "Tag updated successfully" });
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
+
+// Tag Delete Route
+fastify.delete("/tags/:tagId", async (request, reply) => {
+  const { tagId } = request.params;
+
+  try {
+    const result = await tagCollection.deleteOne({
+      _id: new fastify.mongo.ObjectId(tagId),
+    });
+
+    if (result.deletedCount === 0) {
+      return reply.status(404).send({ message: "Tag not found" });
+    }
+
+    return reply.status(200).send({ message: "Tag deleted successfully" });
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
+
 
 
 
@@ -639,6 +682,49 @@ fastify.get("/categories/:categoryId", async (request, reply) => {
     return reply.status(500).send({ error: err.message });
   }
 })
+
+fastify.put("/categories/:categoryId", async (request, reply) => {
+  const { categoryId } = request.params;
+  const { categoryName } = request.body;
+
+  if (!categoryName) {
+    return reply.status(400).send({ message: "Category name is required" });
+  }
+
+  try {
+    const result = await categoriesCollection.updateOne(
+      { _id: new fastify.mongo.ObjectId(categoryId) },
+      { $set: { categoryName } }
+    );
+
+    if (result.matchedCount === 0) {
+      return reply.status(404).send({ message: "Category not found" });
+    }
+
+    return reply.status(200).send({ message: "Category updated successfully" });
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
+
+// Category Delete Route
+fastify.delete("/categories/:categoryId", async (request, reply) => {
+  const { categoryId } = request.params;
+
+  try {
+    const result = await categoriesCollection.deleteOne({
+      _id: new fastify.mongo.ObjectId(categoryId),
+    });
+
+    if (result.deletedCount === 0) {
+      return reply.status(404).send({ message: "Category not found" });
+    }
+
+    return reply.status(200).send({ message: "Category deleted successfully" });
+  } catch (err) {
+    return reply.status(500).send({ error: err.message });
+  }
+});
 
 
 
