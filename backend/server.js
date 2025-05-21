@@ -219,7 +219,7 @@ fastify.get("/user/:userId", async (request, reply) => {
   
   try {
     // 1. Get user details
-    const user = await usersCollection.findOne({
+    const user = await collection.findOne({
       _id: new fastify.mongo.ObjectId(userId),
     });
     

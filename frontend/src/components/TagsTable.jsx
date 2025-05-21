@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
 import { IoArrowBack } from 'react-icons/io5';
 import axios from 'axios';
+import Header from './Header';
 
 const TagsTable = () => {
   const [tags, setTags] = useState([]);
@@ -15,7 +16,8 @@ const TagsTable = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-3xl mx-auto bg-white shadow-2xl rounded-xl p-6">
+      <Header title = "Tags" path="/tags/create" />
+      <div className="w-full mx-auto bg-white shadow-2xl rounded-xl p-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-gray-800">Tags List</h1>
           <Link

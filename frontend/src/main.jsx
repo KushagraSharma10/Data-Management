@@ -12,6 +12,7 @@ import BlogForm from "./components/BlogForm";
 import UserTable from "./components/UserTable";
 import CategoriesTable from "./components/CategoriesTable";
 import TagsTable from "./components/TagsTable";
+import TagForm from "./components/TagForm";
 
 let router = createBrowserRouter([
   {
@@ -57,6 +58,10 @@ let router = createBrowserRouter([
   {
     path:"/tags",
     element: <TagsTable />,
+  },
+  {
+    path:"/tags/create",
+    element : <TagForm />
   }
 ]);
 
