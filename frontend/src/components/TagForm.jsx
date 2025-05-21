@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { 
   Box,
   Button,
@@ -9,22 +9,54 @@ import {
   Typography,
   Paper,
   CircularProgress,
-  IconButton
+  IconButton,
+  Stack
 } from '@mui/material';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 
 const TagForm = () => {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
+  const { tagId } = useParams();
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+  const isViewMode = location.pathname.startsWith('/tags/view/');
+  const isEditMode = location.pathname.startsWith('/tags/edit/');
+  const mode = isViewMode ? 'view' : isEditMode ? 'edit' : 'create';
+
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (mode !== 'create') {
+      const fetchTag = async () => {
+        setIsLoading(true);
+        try {
+          const response = await axios.get(`http://localhost:3000/tags/${tagId}`);
+          setValue('tagName', response.data.tagName);
+        } catch (error) {
+          console.error('Error fetching tag:', error);
+          navigate('/tags');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchTag();
+    }
+  }, [mode, tagId, setValue, navigate]);
 
   const onSubmit = async (data) => {
     try {
-      await axios.post('http://localhost:3000/tags', {
-        tagName: data.tagName
-      });
+      if (mode === 'edit') {
+        await axios.put(`http://localhost:3000/tags/${tagId}`, {
+          tagName: data.tagName
+        });
+      } else if (mode === 'create') {
+        await axios.post('http://localhost:3000/tags', {
+          tagName: data.tagName
+        });
+      }
       navigate('/tags');
     } catch (error) {
-      console.error('Error creating tag:', error);
+      console.error('Error saving tag:', error);
     }
   };
 
@@ -46,9 +78,7 @@ const TagForm = () => {
           onClick={() => navigate('/tags')}
           sx={{ 
             color: 'primary.main',
-            '&:hover': {
-              backgroundColor: 'rgba(25, 118, 210, 0.04)'
-            }
+            '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.04)' }
           }}
         >
           <ArrowBack />
@@ -63,79 +93,130 @@ const TagForm = () => {
             letterSpacing: 1.2
           }}
         >
-          Create New Tag
+          {mode === 'view' && 'View Tag Details'}
+          {mode === 'edit' && 'Edit Tag'}
+          {mode === 'create' && 'Create New Tag'}
         </Typography>
       </Box>
 
-      <Box
-        component="form"
-        onSubmit={handleSubmit(onSubmit)}
-        sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}
-      >
-        <TextField
-          fullWidth
-          label="Tag Name"
-          variant="outlined"
-          {...register('tagName', { 
-            required: 'Tag name is required',
-            minLength: {
-              value: 2,
-              message: 'Tag name must be at least 2 characters'
-            },
-            maxLength: {
-              value: 20,
-              message: 'Tag name cannot exceed 20 characters'
-            }
-          })}
-          error={!!errors.tagName}
-          helperText={errors.tagName?.message}
-          InputProps={{
-            sx: { 
-              borderRadius: 2,
-              '&:focus-within': {
-                transform: 'scale(1.02)',
-                transition: 'transform 0.2s ease-in-out'
-              }
-            }
-          }}
-          InputLabelProps={{
-            sx: {
-              color: 'text.secondary',
-            }
-          }}
-        />
-
-        <Button
-          type="submit"
-          variant="contained"
-          size="large"
-          disabled={isSubmitting}
-          sx={{
-            py: 1.5,
-            borderRadius: 2,
-            textTransform: 'uppercase',
-            fontSize: '1rem',
-            fontWeight: 600,
-            letterSpacing: 1.1,
-            boxShadow: 2,
-            '&:hover': {
-              boxShadow: 3,
-              transform: 'translateY(-1px)'
-            },
-            '&:disabled': {
-              opacity: 0.8
-            }
-          }}
+      {isLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Box
+          component="form"
+          onSubmit={handleSubmit(onSubmit)}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}
         >
-          {isSubmitting ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            'Create Tag'
-          )}
-        </Button>
-      </Box>
+          <TextField
+            fullWidth
+            label="Tag Name"
+            variant="outlined"
+            disabled={mode === 'view'}
+            InputProps={{
+              readOnly: mode === 'view',
+              sx: { 
+                borderRadius: 2,
+                ...(mode !== 'view' && {
+                  '&:focus-within': {
+                    transform: 'scale(1.02)',
+                    transition: 'transform 0.2s ease-in-out'
+                  }
+                })
+              }
+            }}
+            {...register('tagName')}
+            error={mode !== 'view' && !!errors.tagName}
+            helperText={mode !== 'view' ? errors.tagName?.message : ''}
+            InputLabelProps={{
+              sx: { color: 'text.secondary' }
+            }}
+          />
+
+          <Stack direction="row" spacing={2}>
+            {mode === 'view' ? (
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => navigate('/tags')}
+                sx={{
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'uppercase',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  letterSpacing: 1.1,
+                  boxShadow: 2,
+                  '&:hover': { boxShadow: 3 }
+                }}
+              >
+                Back to List
+              </Button>
+            ) : mode === 'edit' ? (
+              <>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  disabled={isSubmitting}
+                  sx={{
+                    flex: 1,
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'uppercase',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    letterSpacing: 1.1,
+                    boxShadow: 2,
+                    '&:hover': { boxShadow: 3 }
+                  }}
+                >
+                  {isSubmitting ? <CircularProgress size={24} /> : 'Update'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => navigate('/tags')}
+                  sx={{
+                    flex: 1,
+                    py: 1.5,
+                    borderRadius: 2,
+                    textTransform: 'uppercase',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    letterSpacing: 1.1
+                  }}
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                disabled={isSubmitting}
+                fullWidth
+                sx={{
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'uppercase',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  letterSpacing: 1.1,
+                  boxShadow: 2,
+                  '&:hover': { boxShadow: 3 }
+                }}
+              >
+                {isSubmitting ? <CircularProgress size={24} /> : 'Create Tag'}
+              </Button>
+            )}
+          </Stack>
+        </Box>
+      )}
     </Paper>
   );
 };
 
-export default TagForm; 
+export default TagForm;

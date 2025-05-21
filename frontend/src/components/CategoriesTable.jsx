@@ -68,14 +68,12 @@ const CategoriesTable = () => {
           </Link>
         </div>
 
-        {/* Dropdown for items per page */}
-
-        {/* Table */}
         <table className="w-full border border-gray-200 rounded-md overflow-hidden">
           <thead className="bg-blue-100">
             <tr>
               <th className="px-4 py-2 text-left">S.No.</th>
               <th className="px-4 py-2 text-left">Category Name</th>
+              <th className="px-4 py-2 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -85,10 +83,47 @@ const CategoriesTable = () => {
                   {(currentPage - 1) * itemsPerPage + index + 1}
                 </td>
                 <td className="px-4 py-2 capitalize">{cat.categoryName}</td>
+                <td className="px-4 py-2">
+                  <div className="flex gap-2">
+                    <Link
+                      to={`/category/view/${cat._id}`}
+                      className="inline-block"
+                    >
+                      <Button
+                        variant="contained"
+                        color="success"
+                        size="small"
+                      >
+                        View
+                      </Button>
+                    </Link>
+                    <Link
+                      to={`/category/edit/${cat._id}`}
+                      className="inline-block"
+                    >
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                      >
+                        Edit
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      size="small"
+                      onClick={() => handleDelete(cat._id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+
 
         <div className="flex items-center justify-end gap-3">
           <div className="flex items-center justify-between">

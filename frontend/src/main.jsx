@@ -65,9 +65,26 @@ let router = createBrowserRouter([
     element : <TagForm />
   },
   {
+    path: "/tags/view/:tagId",
+    element: <TagForm mode="view" />,
+  },
+  {
+    path: "/tags/edit/:tagId",
+    element: <TagForm mode="edit" />,
+  },
+  {
     path:"/category/create",
     element:<CategoriesForm />
-  }
+  },
+  {
+    path: "/category/view/:tagId",
+    element: <CategoriesForm mode="view" />,
+  },
+  {
+    path: "/category/edit/:tagId",
+    element: <CategoriesForm mode="edit" />,
+  },
+  
 ]);
 
 createRoot(document.getElementById("root")).render(

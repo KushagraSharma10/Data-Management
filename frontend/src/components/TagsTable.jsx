@@ -74,7 +74,7 @@ const TagsTable = () => {
                 <td className="px-4 py-2">
                   <div className="flex gap-2">
                     <Link
-                      to={`/tags/${tag._id}`}
+                      to={`/tags/view/${tag._id}`}
                       className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors"
                     >
                       View
