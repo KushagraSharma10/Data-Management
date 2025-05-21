@@ -49,6 +49,15 @@ const CategoriesTable = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/categories/${id}`);
+      setCategories(prev => prev.filter(cat => cat._id !== id)); // update UI
+    } catch (error) {
+      console.error("Delete failed", error);
+    }
+  };
+
   const paginatedCategories = categories.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage

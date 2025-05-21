@@ -52,10 +52,7 @@ let router = createBrowserRouter([
     path: "/blogs/view/:blogId",
     element: <BlogForm mode="view" />,
   },
-  {
-    path: "/categories",
-    element: <CategoriesTable />,
-  },
+  
   {
     path:"/tags",
     element: <TagsTable />,
@@ -73,15 +70,19 @@ let router = createBrowserRouter([
     element: <TagForm mode="edit" />,
   },
   {
-    path:"/category/create",
-    element:<CategoriesForm />
+    path: "/categories",
+    element: <CategoriesTable />,
   },
   {
-    path: "/category/view/:tagId",
+    path:"/category/create",
+    element:<CategoriesForm  />
+  },
+  {
+    path: "/category/view/:categoryId",
     element: <CategoriesForm mode="view" />,
   },
   {
-    path: "/category/edit/:tagId",
+    path: "/category/edit/:categoryId",
     element: <CategoriesForm mode="edit" />,
   },
   
