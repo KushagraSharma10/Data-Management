@@ -4,16 +4,16 @@ import { Link } from 'react-router-dom';
 const App = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8">
-      {/* Header */}
+  
       <header className="mb-10 mt-10 text-center">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
           Data Management
         </h1>
       </header>
 
-      {/* Dashboard Cards */}
+  
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mt-20">
-        {/* Users Card */}
+     
         <Link
           to="/users"
           className="group block bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
@@ -31,7 +31,7 @@ const App = () => {
           </div>
         </Link>
 
-        {/* Blogs Card */}
+  
         <Link
           to="/blogs"
           className="group block bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
@@ -49,7 +49,7 @@ const App = () => {
           </div>
         </Link>
 
-        {/* Tags Card */}
+  
         <Link
           to="/tags"
           className="group block bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
@@ -67,7 +67,7 @@ const App = () => {
           </div>
         </Link>
 
-        {/* Categories Card */}
+    
         <Link
           to="/categories"
           className="group block bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1"

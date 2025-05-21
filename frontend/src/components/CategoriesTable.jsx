@@ -36,7 +36,6 @@ const CategoriesTable = () => {
     fetchCategories();
   }, []);
 
-  // ✅ Filter categories
   const filteredCategories = categories.filter((cat) =>
     cat.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -70,7 +69,7 @@ const CategoriesTable = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      {/* ✅ Pass props to Header */}
+
       <Header
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}

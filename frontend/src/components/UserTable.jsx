@@ -138,7 +138,7 @@ function UserTableToolbar({ numSelected, selected, onDelete }) {
 
     try {
       await axios.delete(`http://localhost:3000/user/${selectedUserId}`);
-      onDelete(selectedUserId); // Parent component ko notify karega
+      onDelete(selectedUserId);
       alert("User deleted successfully");
     } catch (error) {
       console.error("Delete failed:", error);

@@ -184,7 +184,6 @@ const CategoriesForm = ({ mode = 'create' }) => {
         </Box>
       </Box>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
         <DialogTitle>Delete Category</DialogTitle>
         <DialogContent>

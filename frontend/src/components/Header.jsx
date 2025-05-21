@@ -1,7 +1,7 @@
 import React from "react";
 import { IoIosSearch, IoMdAdd } from "react-icons/io";
 import { Link } from "react-router";
-// Header.jsx
+
 const Header = ({ searchQuery, setSearchQuery, title, path }) => {
   const handleSearch = (e) => {
     const searchTerm = e.target.value;

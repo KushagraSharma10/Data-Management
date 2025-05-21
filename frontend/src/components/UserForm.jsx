@@ -159,8 +159,7 @@ export default function UserForm({ mode = "create" }) {
       if (mode === "create") {
         await axios.post("http://localhost:3000/create", formData);
         alert("User created successfully!");
-        navigate("/users"); // Redirect after creation
-      } else {
+        navigate("/users"); 
         await axios.put(`http://localhost:3000/user/${userId}`, formData);
         alert("User updated successfully!");
       }

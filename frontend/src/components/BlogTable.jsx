@@ -196,7 +196,7 @@ export default function BlogTable() {
     setTempSelectedCategories([]);
     setAppliedTags([]);
     setAppliedCategories([]);
-    setPage(0); // Reset to first page when filters are cleared
+    setPage(0); 
   };
 
   useEffect(() => {
@@ -209,7 +209,6 @@ export default function BlogTable() {
         setAllTags(tagsRes.data);
         setAllCategories(categoryRes.data);
 
-        // Initialize temp selections to currently applied filters
         setTempSelectedTags(appliedTags);
         setTempSelectedCategories(appliedCategories);
       } catch (err) {
@@ -217,7 +216,7 @@ export default function BlogTable() {
       }
     };
     fetchFilters();
-  }, [appliedTags, appliedCategories]); // Add dependencies
+  }, [appliedTags, appliedCategories]);
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
@@ -251,7 +250,7 @@ export default function BlogTable() {
   const handleApplyFilters = () => {
     setAppliedTags(tempSelectedTags);
     setAppliedCategories(tempSelectedCategories);
-    setPage(0); // Reset to first page when filters change
+    setPage(0);
     handleFilterClose();
   };
 
@@ -420,13 +419,7 @@ export default function BlogTable() {
     }
   };
 
-  // const handleCategoryCheckboxChange = (categoryName) => {
-  //   setSelectedCategory((prev) =>
-  //     prev.includes(categoryName)
-  //       ? prev.filter((cat) => cat !== categoryName)
-  //       : [...prev, categoryName]
-  //   );
-  // };
+
 
   return (
     <div className="py-10 px-4">
@@ -635,11 +628,11 @@ export default function BlogTable() {
                     <TableCell>{row.description}</TableCell>
                     <TableCell>{row.authorName}</TableCell>
                     <TableCell>{row.category}</TableCell>{" "}
-                    {/* ➕ category cell */}
+                 
                     <TableCell>
                       {row.tags.length ? row.tags.join(", ") : "—"}
                     </TableCell>{" "}
-                    {/* ➕ tags cell */}
+                 
                     <TableCell>{row.createdAt}</TableCell>
                     <TableCell>{row.updatedAt}</TableCell>
                     <TableCell>

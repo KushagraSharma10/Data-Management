@@ -135,6 +135,7 @@ const opt = {
   
 }
 
+// User Routes
 fastify.get("/", async (request, reply) => {
   // const query = request.query.query;
   // console.log(query);
@@ -202,17 +203,6 @@ fastify.post("/create", async (request, reply) => {
   }
 });
 
-// fastify.get("/user/:userId", async (request, reply) => {
-//   const { userId } = request.params;
-//   const user = await collection.findOne({
-//     _id: new fastify.mongo.ObjectId(userId),
-//   });
-//   if (!user) {
-//     return reply.status(404).send({ message: "User not found" });
-//   }
-//   return reply.status(200).send(user);
-// });
-
 
 fastify.get("/user/:userId", async (request, reply) => {
   const { userId } = request.params;
@@ -258,49 +248,6 @@ fastify.get("/users/:userId/blogs", async (request, reply) => {
   }
 });
 
-fastify.get("/migrate-blog-relations", async (request, reply) => {
-  try {
-    const blogs = await blogCollection.find().toArray();
-    let migratedCount = 0;
-
-    for (const blog of blogs) {
-      if (!blog.authorName) continue;
-      
-      // Find user by author name
-      const user = await usersCollection.findOne({
-        $or: [
-          { firstName: blog.authorName },
-          { username: blog.authorName.toLowerCase() }
-        ]
-      });
-
-      if (user) {
-        // Update blog with user reference
-        await blogCollection.updateOne(
-          { _id: blog._id },
-          { $set: { author: user._id } }
-        );
-
-        // Update user's blogs array
-        await usersCollection.updateOne(
-          { _id: user._id },
-          { $addToSet: { blogs: blog._id } }
-        );
-
-        migratedCount++;
-      }
-    }
-
-    return reply.status(200).send({
-      message: `Migration completed. ${migratedCount} blogs linked to users.`
-    });
-  } catch (err) {
-    console.error("Migration error:", err);
-    return reply.status(500).send({ error: "Migration failed" });
-  }
-});
-
-// Update User Route
 fastify.put("/user/:userId", async (request, reply) => {
   const { userId } = request.params;
   const data = {};
@@ -347,7 +294,7 @@ fastify.put("/user/:userId", async (request, reply) => {
   }
 });
 
-// Delete User Route
+
 fastify.delete("/user/:userId", async (request, reply) => {
   const { userId } = request.params;
   
@@ -367,6 +314,8 @@ fastify.delete("/user/:userId", async (request, reply) => {
 });
 
 
+
+// Blog Routes
 fastify.get("/blogs", async (request, reply) => {
   try {
     const blogs = await blogCollection.find().toArray();
@@ -375,47 +324,6 @@ fastify.get("/blogs", async (request, reply) => {
     return reply.status(500).send({ error: err.message });
   }
 });
-
-
-// fastify.post("/blogs", async (request, reply) => {
-//   const blog = {};
-//   let imageFilename = null;
-
-//   const parts = request.parts();
-//   for await (const part of parts) {
-//     if (part.file) {
-//       imageFilename = `${Date.now()}-${part.filename}`;
-//       const filePath = path.join(uploadDir, imageFilename);
-//       await pipeline(part.file, fs.createWriteStream(filePath));
-//     } else {
-//       // part.value is always string, parse tags if needed
-//       if (part.fieldname === "tags") {
-//         try {
-//           blog.tags = JSON.parse(part.value);
-//         } catch {
-//           blog.tags = part.value; // fallback if not JSON
-//         }
-//       } else {
-//         blog[part.fieldname] = part.value;
-//       }
-//     }
-//   }
-
-//   if (imageFilename) {
-//     blog.image = `http://localhost:3000/uploads/${imageFilename}`;
-//   }
-
-//   blog.createdAt = new Date();
-//   blog.updatedAt = new Date();
-
-//   try {
-//     const result = await blogCollection.insertOne(blog);
-//     blog._id = result.insertedId;
-//     return reply.status(201).send({ data: blog, message: "Blog created", result });
-//   } catch (err) {
-//     return reply.status(500).send({ error: err.message });
-//   }
-// });
 
 fastify.post("/blogs", async (request, reply) => {
   const blog = {};
@@ -534,8 +442,6 @@ fastify.get("/blogs/:blogId", async (request, reply) => {
   }
 });
 
-
-
 fastify.delete("/blogs/:blogId", async (request, reply) => {
   const { blogId } = request.params;
 
@@ -554,6 +460,8 @@ fastify.delete("/blogs/:blogId", async (request, reply) => {
   }
 });
 
+
+// Tag Routes
 fastify.get("/tags", async (request, reply) => {
   try {
     const tags = await tagCollection.find().toArray();
@@ -619,7 +527,7 @@ fastify.put("/tags/:tagId", async (request, reply) => {
   }
 });
 
-// Tag Delete Route
+
 fastify.delete("/tags/:tagId", async (request, reply) => {
   const { tagId } = request.params;
 
@@ -638,11 +546,7 @@ fastify.delete("/tags/:tagId", async (request, reply) => {
   }
 });
 
-
-
-
-// category routes
-
+// Category Routes
 fastify.get("/categories", async (request, reply) => {
   try {
     const tags = await categoriesCollection.find().toArray();
@@ -651,7 +555,6 @@ fastify.get("/categories", async (request, reply) => {
     return reply.status(500).send({ error: err.message });
   }
 })
-
 
 fastify.post("/categories", async (request, reply) => {
   const { categoryName } = request.body;
@@ -706,7 +609,6 @@ fastify.put("/categories/:categoryId", async (request, reply) => {
   }
 });
 
-// Category Delete Route
 fastify.delete("/categories/:categoryId", async (request, reply) => {
   const { categoryId } = request.params;
 
@@ -724,9 +626,6 @@ fastify.delete("/categories/:categoryId", async (request, reply) => {
     return reply.status(500).send({ error: err.message });
   }
 });
-
-
-
 
 fastify.listen({ port: 3000 }, (err, address) => {
   if (err) {

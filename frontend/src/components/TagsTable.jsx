@@ -37,7 +37,6 @@ const TagsTable = () => {
     }
   };
 
-  // 🔍 Filter tags based on search query
   const filteredTags = tags.filter(tag =>
     tag.tagName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -106,7 +105,7 @@ const TagsTable = () => {
           </tbody>
         </table>
 
-        {/* Pagination Controls */}
+
         <div className='flex items-center justify-end gap-4 mt-4'>
           <div>
             <label className="mr-2 font-medium">Items per page:</label>
