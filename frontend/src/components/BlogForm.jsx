@@ -45,7 +45,7 @@ export default function BlogForm({ mode = "create" }) {
         setValue("title", title);
         setValue("description", description);
         setValue("author", author);
-        setValue("category", category); // ✅ Important
+        setValue("category", category); 
         setValue("tags", tags || []);
         setPreview(image);
 

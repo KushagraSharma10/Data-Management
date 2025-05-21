@@ -438,7 +438,9 @@ fastify.post("/blogs", async (request, reply) => {
         blog.tags = part.value;
       }
     } else {
-      blog[part.fieldname] = part.value;
+      if (part.fieldname !== 'author') { // Ignore incoming author full name
+        blog[part.fieldname] = part.value;
+      }
     }
   }
 
