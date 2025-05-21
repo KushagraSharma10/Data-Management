@@ -52,6 +52,7 @@ const headCells = [
     disablePadding: false,
     label: "Gender (M/F/O)",
   },
+  { id: "blogs", numeric: true, disablePadding: false, label: "Blogs" },
   {
     id: "personalDetails",
     numeric: false,
@@ -59,6 +60,7 @@ const headCells = [
     label: "Personal Details",
   },
   { id: "edu", numeric: false, disablePadding: false, label: "Edu" },
+  
 ];
 
 function UserTableHead(props) {
@@ -249,8 +251,10 @@ export default function UserTable() {
     },
     phone: user.phone,
     gender:user.gender,
+    blogs: user.blogs?.length || 0,
     personalDetails: `DOB: ${formatDate(user.birthDate)}\nAge: ${user.age}\nAddress:\n${user.address.address}, ${user.address.city}`,
     edu: `University: ${user.university}`,
+   
   }));
 
   const handleRequestSort = (event, property) => {
@@ -383,6 +387,7 @@ export default function UserTable() {
                     </TableCell>
                     <TableCell align="left">{row.phone}</TableCell>
                     <TableCell align="left">{row.gender}</TableCell>
+                    <TableCell align="left">{row.blogs}</TableCell>
                     <TableCell align="left">
                       <Box
                         sx={{
@@ -399,6 +404,7 @@ export default function UserTable() {
                       </Box>
                     </TableCell>
                     <TableCell align="left">{row.edu}</TableCell>
+                    
                   </TableRow>
                 );
               })}
