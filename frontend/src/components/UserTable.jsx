@@ -60,7 +60,6 @@ const headCells = [
     label: "Personal Details",
   },
   { id: "edu", numeric: false, disablePadding: false, label: "Edu" },
-  
 ];
 
 function UserTableHead(props) {
@@ -131,8 +130,10 @@ function UserTableToolbar({ numSelected, selected, onDelete }) {
 
   const handleDelete = async () => {
     if (!selectedUserId) return;
-    
-    const confirm = window.confirm("Are you sure you want to delete this user?");
+
+    const confirm = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
     if (!confirm) return;
 
     try {
@@ -187,15 +188,9 @@ function UserTableToolbar({ numSelected, selected, onDelete }) {
             </Button>
           </Link>
           <Link to={`/users/edit/${selectedUserId}`}>
-            <Button variant="contained">
-              Edit
-            </Button>
+            <Button variant="contained">Edit</Button>
           </Link>
-          <Button 
-            variant="contained" 
-            color="error"
-            onClick={handleDelete}
-          >
+          <Button variant="contained" color="error" onClick={handleDelete}>
             Delete
           </Button>
         </div>
@@ -211,7 +206,7 @@ export default function UserTable() {
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
   const [selected, setSelected] = React.useState([]);
-  const[searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = React.useState(0);
   // const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -238,8 +233,7 @@ export default function UserTable() {
       year: "numeric",
     });
   };
-  
-  
+
   const rows = users.map((user) => ({
     id: user._id,
     profile: {
@@ -250,11 +244,12 @@ export default function UserTable() {
       email: user.email,
     },
     phone: user.phone,
-    gender:user.gender,
+    gender: user.gender,
     blogs: user.blogs?.length || 0,
-    personalDetails: `DOB: ${formatDate(user.birthDate)}\nAge: ${user.age}\nAddress:\n${user.address.address}, ${user.address.city}`,
+    personalDetails: `DOB: ${formatDate(user.birthDate)}\nAge: ${
+      user.age
+    }\nAddress:\n${user.address.address}, ${user.address.city}`,
     edu: `University: ${user.university}`,
-   
   }));
 
   const handleRequestSort = (event, property) => {
@@ -306,8 +301,6 @@ export default function UserTable() {
     row.profile.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  
-
   const visibleRows = React.useMemo(
     () =>
       [...filteredRows]
@@ -318,120 +311,136 @@ export default function UserTable() {
 
   return (
     <div className="p-10">
-      <Header  searchQuery = {searchQuery} setSearchQuery = {setSearchQuery} title="User" path = "/users/create" />
-       <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
-        <UserTableToolbar numSelected={selected.length} selected = {selected} />
-        <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size={"medium"}
-          >
-            <UserTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-            />
-            <TableBody>
-              {visibleRows.map((row, index) => {
-                const isItemSelected = selected.includes(row.id);
-                const labelId = `enhanced-table-checkbox-${index}`;
+      <Header
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        title="User"
+        path="/users/create"
+      />
+      <Box sx={{ width: "100%" }}>
+        <Paper sx={{ width: "100%", mb: 2 }}>
+          <UserTableToolbar numSelected={selected.length} selected={selected} />
+          <TableContainer>
+            <Table
+              sx={{ minWidth: 750 }}
+              aria-labelledby="tableTitle"
+              size={"medium"}
+            >
+              <UserTableHead
+                numSelected={selected.length}
+                order={order}
+                orderBy={orderBy}
+                onSelectAllClick={handleSelectAllClick}
+                onRequestSort={handleRequestSort}
+                rowCount={rows.length}
+              />
+              <TableBody>
+                {visibleRows.map((row, index) => {
+                  const isItemSelected = selected.includes(row.id);
+                  const labelId = `enhanced-table-checkbox-${index}`;
 
-                return (
-                  <TableRow
-                    hover
-                    onClick={(event) => handleClick(event, row.id)}
-                    role="checkbox"
-                    aria-checked={isItemSelected}
-                    tabIndex={-1}
-                    key={row.id}
-                    selected={isItemSelected}
-                    sx={{ cursor: "pointer" }}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        color="primary"
-                        checked={isItemSelected}
-                        inputProps={{
-                          "aria-labelledby": labelId,
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell
-                      component="th"
-                      id={labelId}
-                      scope="row"
-                      padding="none"
+                  return (
+                    <TableRow
+                      hover
+                      onClick={(event) => handleClick(event, row.id)}
+                      role="checkbox"
+                      aria-checked={isItemSelected}
+                      tabIndex={-1}
+                      key={row.id}
+                      selected={isItemSelected}
+                      sx={{ cursor: "pointer" }}
                     >
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                      >
-                        <img
-                          src={row.profile.avatar}
-                          alt={row.profile.name}
-                          style={{ width: 40, height: 40, borderRadius: "50%" }}
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          color="primary"
+                          checked={isItemSelected}
+                          inputProps={{
+                            "aria-labelledby": labelId,
+                          }}
                         />
-                        <Box>
-                          <Typography variant="body1">
-                            {row.profile.name}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            {row.profile.email}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell align="left">{row.phone}</TableCell>
-                    <TableCell align="left">{row.gender}</TableCell>
-                    <TableCell align="left">{row.blogs}</TableCell>
-                    <TableCell align="left">
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          width: "20vw",
-                        }}
+                      </TableCell>
+                      <TableCell
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        padding="none"
                       >
-                        {row.personalDetails.split("\n").map((line, i) => (
-                          <Typography key={i} variant="body2">
-                            {line}
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <img
+                            src={row.profile.avatar}
+                            alt={row.profile.name}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: "50%",
+                            }}
+                          />
+                          <Box>
+                            <Typography variant="body1">
+                              {row.profile.name}
+                            </Typography>
+                            <Typography variant="body2" color="textSecondary">
+                              {row.profile.email}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                      <TableCell align="left">{row.phone}</TableCell>
+                      <TableCell align="left">{row.gender}</TableCell>
+                      <TableCell align="right" sx={{ pr: 4 }}>
+                        {" "}
+                        
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: 600,
+                             
+                            }}
+                          >
+                            {row.blogs}
                           </Typography>
-                        ))}
-                      </Box>
-                    </TableCell>
-                    <TableCell align="left">{row.edu}</TableCell>
-                    
+              
+                      </TableCell>
+                      <TableCell align="left">
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            width: "20vw",
+                          }}
+                        >
+                          {row.personalDetails.split("\n").map((line, i) => (
+                            <Typography key={i} variant="body2">
+                              {line}
+                            </Typography>
+                          ))}
+                        </Box>
+                      </TableCell>
+                      <TableCell align="left">{row.edu}</TableCell>
+                    </TableRow>
+                  );
+                })}
+                {emptyRows > 0 && (
+                  <TableRow style={{ height: 53 * emptyRows }}>
+                    <TableCell colSpan={7} />{" "}
                   </TableRow>
-                );
-              })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: 53 * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
-    </Box>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+      </Box>
     </div>
-   
   );
 }
