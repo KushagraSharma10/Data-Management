@@ -171,7 +171,7 @@ export default function BlogTable() {
   const [appliedCategories, setAppliedCategories] = React.useState([]);
   const [searchQuery, setSearchQuery] = React.useState("");
 
-  // In the filter popover, use local states that only get applied when user clicks "Apply"
+
   const [tempSelectedTags, setTempSelectedTags] = React.useState([]);
   const [tempSelectedCategories, setTempSelectedCategories] = React.useState(
     []
@@ -334,7 +334,7 @@ export default function BlogTable() {
           id: blog._id,
           title: blog.title,
           description: blog.description,
-          author: blog.author,
+          authorName: blog?.authorName || "none",
           category: blog.category,
           tags: Array.isArray(blog.tags)
             ? blog.tags
@@ -628,7 +628,7 @@ export default function BlogTable() {
                     <TableCell>{row.sno}</TableCell>
                     <TableCell>{row.title}</TableCell>
                     <TableCell>{row.description}</TableCell>
-                    <TableCell>{row.author}</TableCell>
+                    <TableCell>{row.authorName}</TableCell>
                     <TableCell>{row.category}</TableCell>{" "}
                     {/* ➕ category cell */}
                     <TableCell>
