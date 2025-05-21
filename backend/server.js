@@ -202,15 +202,102 @@ fastify.post("/create", async (request, reply) => {
   }
 });
 
+// fastify.get("/user/:userId", async (request, reply) => {
+//   const { userId } = request.params;
+//   const user = await collection.findOne({
+//     _id: new fastify.mongo.ObjectId(userId),
+//   });
+//   if (!user) {
+//     return reply.status(404).send({ message: "User not found" });
+//   }
+//   return reply.status(200).send(user);
+// });
+
+
 fastify.get("/user/:userId", async (request, reply) => {
   const { userId } = request.params;
-  const user = await collection.findOne({
-    _id: new fastify.mongo.ObjectId(userId),
-  });
-  if (!user) {
-    return reply.status(404).send({ message: "User not found" });
+  
+  try {
+    // 1. Get user details
+    const user = await usersCollection.findOne({
+      _id: new fastify.mongo.ObjectId(userId),
+    });
+    
+    if (!user) {
+      return reply.status(404).send({ message: "User not found" });
+    }
+
+    // 2. Get user's blogs
+    const blogs = await blogCollection.find({
+      author: new fastify.mongo.ObjectId(userId)
+    }).toArray();
+
+    return reply.status(200).send({
+      ...user,
+      blogsCount: blogs.length,
+      blogs: blogs // Optional: include full blog data if needed
+    });
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    return reply.status(500).send({ error: "Internal server error" });
   }
-  return reply.status(200).send(user);
+});
+
+fastify.get("/users/:userId/blogs", async (request, reply) => {
+  const { userId } = request.params;
+  
+  try {
+    const blogs = await blogCollection.find({
+      author: new fastify.mongo.ObjectId(userId)
+    }).toArray();
+
+    return reply.status(200).send(blogs);
+  } catch (err) {
+    console.error("Error fetching user blogs:", err);
+    return reply.status(500).send({ error: "Internal server error" });
+  }
+});
+
+fastify.get("/migrate-blog-relations", async (request, reply) => {
+  try {
+    const blogs = await blogCollection.find().toArray();
+    let migratedCount = 0;
+
+    for (const blog of blogs) {
+      if (!blog.authorName) continue;
+      
+      // Find user by author name
+      const user = await usersCollection.findOne({
+        $or: [
+          { firstName: blog.authorName },
+          { username: blog.authorName.toLowerCase() }
+        ]
+      });
+
+      if (user) {
+        // Update blog with user reference
+        await blogCollection.updateOne(
+          { _id: blog._id },
+          { $set: { author: user._id } }
+        );
+
+        // Update user's blogs array
+        await usersCollection.updateOne(
+          { _id: user._id },
+          { $addToSet: { blogs: blog._id } }
+        );
+
+        migratedCount++;
+      }
+    }
+
+    return reply.status(200).send({
+      message: `Migration completed. ${migratedCount} blogs linked to users.`
+    });
+  } catch (err) {
+    console.error("Migration error:", err);
+    return reply.status(500).send({ error: "Migration failed" });
+  }
 });
 
 // Update User Route
@@ -301,7 +388,16 @@ fastify.get("/blogs", async (request, reply) => {
 //       const filePath = path.join(uploadDir, imageFilename);
 //       await pipeline(part.file, fs.createWriteStream(filePath));
 //     } else {
-//       blog[part.fieldname] = part.value;
+//       // part.value is always string, parse tags if needed
+//       if (part.fieldname === "tags") {
+//         try {
+//           blog.tags = JSON.parse(part.value);
+//         } catch {
+//           blog.tags = part.value; // fallback if not JSON
+//         }
+//       } else {
+//         blog[part.fieldname] = part.value;
+//       }
 //     }
 //   }
 
@@ -309,7 +405,6 @@ fastify.get("/blogs", async (request, reply) => {
 //     blog.image = `http://localhost:3000/uploads/${imageFilename}`;
 //   }
 
-//   // 🕒 Add timestamps
 //   blog.createdAt = new Date();
 //   blog.updatedAt = new Date();
 
@@ -322,10 +417,10 @@ fastify.get("/blogs", async (request, reply) => {
 //   }
 // });
 
-
 fastify.post("/blogs", async (request, reply) => {
   const blog = {};
   let imageFilename = null;
+  let userId = null; // To store the user ID
 
   const parts = request.parts();
   for await (const part of parts) {
@@ -333,17 +428,17 @@ fastify.post("/blogs", async (request, reply) => {
       imageFilename = `${Date.now()}-${part.filename}`;
       const filePath = path.join(uploadDir, imageFilename);
       await pipeline(part.file, fs.createWriteStream(filePath));
-    } else {
-      // part.value is always string, parse tags if needed
-      if (part.fieldname === "tags") {
-        try {
-          blog.tags = JSON.parse(part.value);
-        } catch {
-          blog.tags = part.value; // fallback if not JSON
-        }
-      } else {
-        blog[part.fieldname] = part.value;
+    } else if (part.fieldname === 'userId') {
+      // Capture the user ID from form data
+      userId = part.value;
+    } else if (part.fieldname === "tags") {
+      try {
+        blog.tags = JSON.parse(part.value);
+      } catch {
+        blog.tags = part.value;
       }
+    } else {
+      blog[part.fieldname] = part.value;
     }
   }
 
@@ -355,14 +450,30 @@ fastify.post("/blogs", async (request, reply) => {
   blog.updatedAt = new Date();
 
   try {
-    const result = await blogCollection.insertOne(blog);
-    blog._id = result.insertedId;
-    return reply.status(201).send({ data: blog, message: "Blog created", result });
+    // 1. First create the blog
+    const result = await blogCollection.insertOne({
+      ...blog,
+      author: new fastify.mongo.ObjectId(userId), // Store user reference
+      authorName: blog.author // Keep original author name for display
+    });
+
+    // 2. Update user's blogs array (if user exists)
+    if (userId) {
+      await collection.updateOne(
+        { _id: new fastify.mongo.ObjectId(userId) },
+        { $push: { blogs: result.insertedId } }
+      );
+    }
+
+    return reply.status(201).send({ 
+      data: { ...blog, _id: result.insertedId },
+      message: "Blog created successfully" 
+    });
   } catch (err) {
+    console.error("Blog creation error:", err);
     return reply.status(500).send({ error: err.message });
   }
 });
-
 
 fastify.put("/blogs/:blogId", async (request, reply) => {
   const { blogId } = request.params;
