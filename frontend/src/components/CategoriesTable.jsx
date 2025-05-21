@@ -17,8 +17,8 @@ import Header from "./Header";
 
 const CategoriesTable = () => {
   const [categories, setCategories] = useState([]);
+  const [searchQuery, setSearchQuery] = useState(""); // ✅ search state
   const [loading, setLoading] = useState(true);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 
@@ -36,7 +36,12 @@ const CategoriesTable = () => {
     fetchCategories();
   }, []);
 
-  const totalPages = Math.ceil(categories.length / itemsPerPage);
+  // ✅ Filter categories
+  const filteredCategories = categories.filter((cat) =>
+    cat.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
 
   const handleItemsPerPageChange = (e) => {
     setItemsPerPage(Number(e.target.value));
@@ -52,20 +57,27 @@ const CategoriesTable = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/categories/${id}`);
-      setCategories(prev => prev.filter(cat => cat._id !== id)); // update UI
+      setCategories((prev) => prev.filter((cat) => cat._id !== id));
     } catch (error) {
       console.error("Delete failed", error);
     }
   };
 
-  const paginatedCategories = categories.slice(
+  const paginatedCategories = filteredCategories.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <Header title="Category" path="/category/create" />
+      {/* ✅ Pass props to Header */}
+      <Header
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        title="Category"
+        path="/category/create"
+      />
+
       <div className="w-full mx-auto bg-white shadow-2xl rounded-xl p-6">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-gray-800">Categories List</h1>
@@ -133,7 +145,6 @@ const CategoriesTable = () => {
           </tbody>
         </table>
 
-
         <div className="flex items-center justify-end gap-3">
           <div className="flex items-center justify-between">
             <div>
@@ -150,55 +161,52 @@ const CategoriesTable = () => {
               </Select>
             </div>
           </div>
-          {/* Pagination Controls */}
-          <div className="flex justify-between items-center">
-            <div />
-            <div className="flex gap-2">
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => handlePageChange(1)}
-                disabled={currentPage === 1}
-              >
-                First
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                Prev
-              </Button>
 
-              {Array.from({ length: totalPages }, (_, i) => (
-                <Button
-                  key={i + 1}
-                  variant={currentPage === i + 1 ? "contained" : "outlined"}
-                  size="small"
-                  onClick={() => handlePageChange(i + 1)}
-                >
-                  {i + 1}
-                </Button>
-              ))}
+          <div className="flex gap-2">
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+            >
+              First
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Prev
+            </Button>
 
+            {Array.from({ length: totalPages }, (_, i) => (
               <Button
-                variant="outlined"
+                key={i + 1}
+                variant={currentPage === i + 1 ? "contained" : "outlined"}
                 size="small"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(i + 1)}
               >
-                Next
+                {i + 1}
               </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => handlePageChange(totalPages)}
-                disabled={currentPage === totalPages}
-              >
-                Last
-              </Button>
-            </div>
+            ))}
+
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              Last
+            </Button>
           </div>
         </div>
       </div>
