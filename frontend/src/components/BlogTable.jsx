@@ -165,8 +165,6 @@ export default function BlogTable() {
   const [filterAnchorEl, setFilterAnchorEl] = React.useState(null);
   const [allTags, setAllTags] = React.useState([]);
   const [allCategories, setAllCategories] = React.useState([]);
-  // const [selectedTags, setSelectedTags] = React.useState([]);
-  // const [selectedCategory, setSelectedCategory] = React.useState([]);
   const [appliedTags, setAppliedTags] = React.useState([]);
   const [appliedCategories, setAppliedCategories] = React.useState([]);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -260,8 +258,21 @@ export default function BlogTable() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/blogs");
-        setBlogs(res.data);
+        const blogsRes = await axios.get("http://localhost:3000/blogs");
+        const usersRes = await axios.get("http://localhost:3000/");
+        
+        const blogsWithAuthors = blogsRes.data.map(blog => ({
+          ...blog,
+         
+          authorName: usersRes.data.find(user => 
+            user._id === blog.author
+          )?.firstName + " " + 
+          usersRes.data.find(user => 
+            user._id === blog.author
+          )?.lastName || "Unknown Author"
+        }));
+  
+        setBlogs(blogsWithAuthors);
       } catch (err) {
         console.error("Failed to fetch blogs:", err);
       }
@@ -328,7 +339,7 @@ export default function BlogTable() {
           id: blog._id,
           title: blog.title,
           description: blog.description,
-          authorName: blog?.authorName || "none",
+          authorName: blog.authorName || "Unknown Author",
           category: blog.category,
           tags: Array.isArray(blog.tags)
             ? blog.tags

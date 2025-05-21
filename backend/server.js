@@ -456,7 +456,6 @@ fastify.post("/blogs", async (request, reply) => {
     const result = await blogCollection.insertOne({
       ...blog,
       author: new fastify.mongo.ObjectId(userId), // Store user reference
-      authorName: blog.author // Keep original author name for display
     });
 
     // 2. Update user's blogs array (if user exists)
