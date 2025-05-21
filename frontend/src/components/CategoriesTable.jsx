@@ -17,8 +17,8 @@ import Header from "./Header";
 
 const CategoriesTable = () => {
   const [categories, setCategories] = useState([]);
-  const [searchQuery, setSearchQuery] = useState(""); // ✅ search state
-  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(""); 
+  // const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
 

@@ -165,8 +165,8 @@ export default function BlogTable() {
   const [filterAnchorEl, setFilterAnchorEl] = React.useState(null);
   const [allTags, setAllTags] = React.useState([]);
   const [allCategories, setAllCategories] = React.useState([]);
-  const [selectedTags, setSelectedTags] = React.useState([]);
-  const [selectedCategory, setSelectedCategory] = React.useState([]);
+  // const [selectedTags, setSelectedTags] = React.useState([]);
+  // const [selectedCategory, setSelectedCategory] = React.useState([]);
   const [appliedTags, setAppliedTags] = React.useState([]);
   const [appliedCategories, setAppliedCategories] = React.useState([]);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -190,15 +190,9 @@ export default function BlogTable() {
   const open = Boolean(filterAnchorEl);
   const id = open ? "filter-popover" : undefined;
 
-  const handleTagChange = (tag) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  };
+  
 
-  const handleCategoryChange = (event) => {
-    setSelectedCategory(event.target.value);
-  };
+
   const handleClearFilters = () => {
     setTempSelectedTags([]);
     setTempSelectedCategories([]);
@@ -415,13 +409,13 @@ export default function BlogTable() {
     }
   };
 
-  const handleCategoryCheckboxChange = (categoryName) => {
-    setSelectedCategory((prev) =>
-      prev.includes(categoryName)
-        ? prev.filter((cat) => cat !== categoryName)
-        : [...prev, categoryName]
-    );
-  };
+  // const handleCategoryCheckboxChange = (categoryName) => {
+  //   setSelectedCategory((prev) =>
+  //     prev.includes(categoryName)
+  //       ? prev.filter((cat) => cat !== categoryName)
+  //       : [...prev, categoryName]
+  //   );
+  // };
 
   return (
     <div className="py-10 px-4">
