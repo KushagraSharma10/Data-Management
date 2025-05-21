@@ -27,10 +27,10 @@ const CategoriesTable = () => {
       try {
         const response = await axios.get("http://localhost:3000/categories");
         setCategories(response.data);
-        setLoading(false);
+        // setLoading(false);
       } catch (error) {
         console.error("Error fetching categories:", error);
-        setLoading(false);
+        // setLoading(false);
       }
     };
     fetchCategories();
