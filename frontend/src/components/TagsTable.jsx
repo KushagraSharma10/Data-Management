@@ -54,6 +54,7 @@ const TagsTable = () => {
         path="/tags/create"
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        placeholder="Search Tags..."
       />
 
       <div className="w-full mx-auto bg-white shadow-2xl rounded-xl p-6">

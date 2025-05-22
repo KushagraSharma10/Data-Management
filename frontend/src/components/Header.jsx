@@ -2,7 +2,7 @@ import React from "react";
 import { IoIosSearch, IoMdAdd } from "react-icons/io";
 import { Link } from "react-router";
 
-const Header = ({ searchQuery, setSearchQuery, title, path }) => {
+const Header = ({ searchQuery, setSearchQuery, title, path, placeholder = "search" }) => {
   const handleSearch = (e) => {
     const searchTerm = e.target.value;
     setSearchQuery(searchTerm);
@@ -14,7 +14,7 @@ const Header = ({ searchQuery, setSearchQuery, title, path }) => {
         <input
           className="w-full outline-none p-3 px-6 rounded-lg active:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-400 transition duration-200 ease-in-out"
           type="search"
-          placeholder="Search blogs..."
+          placeholder={placeholder}
           onChange={handleSearch}
           value={searchQuery}
         />

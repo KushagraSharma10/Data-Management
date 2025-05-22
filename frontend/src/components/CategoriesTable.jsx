@@ -75,6 +75,7 @@ const CategoriesTable = () => {
         setSearchQuery={setSearchQuery}
         title="Category"
         path="/category/create"
+        placeholder="Search Categories..."
       />
 
       <div className="w-full mx-auto bg-white shadow-2xl rounded-xl p-6">

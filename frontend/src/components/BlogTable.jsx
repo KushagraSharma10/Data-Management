@@ -591,6 +591,7 @@ export default function BlogTable() {
         path="/blogs/create"
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        placeholder="Search Blogs..."
       />
       <Box className="p-2 rounded-xl" sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>

@@ -305,6 +305,7 @@ export default function UserTable() {
         setSearchQuery={setSearchQuery}
         title="User"
         path="/users/create"
+        placeholder="Search Users..."
       />
       <Box sx={{ width: "100%" }}>
         <Paper sx={{ width: "100%", mb: 2 }}>
